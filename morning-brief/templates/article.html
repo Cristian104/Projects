@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} — Intelligence Feed{% endblock %}
+{% block meta_desc %}{{ article.summary }}{% endblock %}
+
+{% block header_nav %}
+<a href="/" class="back-btn">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+  All Stories
+</a>
+{% endblock %}
+
+{% block header_stats %}
+<span style="font-size:0.67rem; color:var(--text-3);">{{ article.read_time }} min read</span>
+{% endblock %}
+
+{% block head_extra %}
+<style>
+/* ─────────────────────────────────────────────────────────
+   READING PROGRESS BAR
+───────────────────────────────────────────────────────── */
+.progress-wrap {
+  position: fixed; top: 56px; left: 0; right: 0; z-index: 199;
+  height: 2px; background: transparent; pointer-events: none;
+}
+#readProgress {
+  height: 100%; background: var(--red);
+  width: 0%; transition: width 0.1s linear;
+}
+
+/* ─────────────────────────────────────────────────────────
+   BACK BUTTON (header override)
+───────────────────────────────────────────────────────── */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.78rem; font-weight: 500; color: var(--text-2);
+  padding: 5px 12px; border-radius: 20px;
+  border: 1px solid var(--border);
+  transition: all 0.15s; white-space: nowrap;
+}
+.back-btn:hover { color: var(--text); background: var(--surface-2); border-color: var(--border-h); }
+.back-btn svg { width: 13px; height: 13px; }
+
+/* ─────────────────────────────────────────────────────────
+   HERO IMAGE
+───────────────────────────────────────────────────────── */
+.article-hero {
+  width: 100%; max-height: 520px; overflow: hidden;
+  position: relative; background: var(--surface-2);
+}
+.article-hero-img {
+  width: 100%; height: 480px; object-fit: cover; display: block;
+}
+.article-hero-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    transparent 50%,
+    rgba(0,0,0,0.35) 100%
+  );
+}
+.article-hero-placeholder {
+  width: 100%; height: 320px;
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-3) 100%);
+}
+[data-theme="light"] .article-hero-placeholder {
+  background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%);
+}
+
+/* Category-keyed hero placeholders */
+.article-hero-placeholder.tech  { background: linear-gradient(135deg, #001a2e 0%, #003366 100%); }
+.article-hero-placeholder.world { background: linear-gradient(135deg, #1c0014 0%, #350028 100%); }
+[data-theme="light"] .article-hero-placeholder.tech  { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
+[data-theme="light"] .article-hero-placeholder.world { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%); }
+
+/* ─────────────────────────────────────────────────────────
+   ARTICLE LAYOUT
+───────────────────────────────────────────────────────── */
+.article-wrap {
+  max-width: 740px; margin: 0 auto; padding: 52px 24px 80px;
+}
+
+/* Meta top row */
+.article-meta-top {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.cat-badge {
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 4px;
+}
+.cat-badge.tech  { background: var(--blue-bg); color: var(--blue); border: 1px solid var(--blue-border); }
+.cat-badge.world { background: var(--red-bg);  color: var(--red);  border: 1px solid var(--red-border); }
+.source-label {
+  font-size: 0.8rem; font-weight: 600; color: var(--text-2);
+}
+
+/* Headline */
+.article-title {
+  font-size: clamp(1.75rem, 4vw, 2.9rem);
+  font-weight: 700; line-height: 1.13;
+  letter-spacing: -0.03em; color: var(--text);
+  margin-bottom: 22px;
+}
+
+/* Meta row */
+.article-meta-row {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  font-size: 0.77rem; color: var(--text-3);
+  padding-bottom: 28px; margin-bottom: 36px;
+  border-bottom: 1px solid var(--border);
+}
+.meta-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.meta-chip svg { width: 13px; height: 13px; opacity: 0.55; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Body */
+.article-body {
+  font-size: 1.06rem; line-height: 1.82; color: var(--text-2);
+}
+[data-theme="light"] .article-body { color: var(--text-2); }
+.article-body p { margin-bottom: 1.5em; }
+.article-body p:first-of-type { color: var(--text); }
+.article-body p:first-of-type::first-letter {
+  font-size: 3.4em; font-weight: 700; float: left;
+  line-height: 0.78; margin: 0.08em 0.1em 0 0;
+  color: var(--red); letter-spacing: -0.02em;
+}
+
+/* No-content fallback */
+.no-content-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 32px 36px;
+}
+[data-theme="light"] .no-content-box { box-shadow: 0 2px 12px var(--shadow-sm); border-color: transparent; }
+.no-content-box p {
+  font-size: 1rem; line-height: 1.75; color: var(--text-2);
+  margin-bottom: 24px;
+}
+.read-original-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 11px 24px; border-radius: 10px;
+  background: var(--red); color: #fff;
+  font-size: 0.82rem; font-weight: 700;
+  transition: filter 0.15s, transform 0.12s;
+}
+.read-original-btn:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.read-original-btn svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ─────────────────────────────────────────────────────────
+   RELATED ARTICLES
+───────────────────────────────────────────────────────── */
+.related-section { max-width: 740px; margin: 0 auto; padding: 0 24px 96px; }
+.related-header {
+  display: flex; align-items: center; gap: 9px;
+  margin-bottom: 20px; padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-3);
+}
+.related-header::before {
+  content: ''; display: block; width: 3px; height: 14px;
+  background: var(--red); border-radius: 2px;
+}
+.related-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.related-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 11px; overflow: hidden; display: block;
+  transition: border-color 0.15s, transform 0.25s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
+}
+.related-card:hover { border-color: var(--border-h); transform: translateY(-2px); box-shadow: 0 6px 20px var(--shadow-sm); }
+[data-theme="light"] .related-card { border-color: transparent; box-shadow: 0 1px 4px var(--shadow-sm); }
+[data-theme="light"] .related-card:hover { box-shadow: 0 4px 16px var(--shadow-lg); }
+.related-thumb {
+  aspect-ratio: 16/9; overflow: hidden; background: var(--surface-3);
+}
+.related-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+}
+.related-card:hover .related-thumb img { transform: scale(1.04); }
+.related-thumb-placeholder {
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+}
+.related-body { padding: 13px 15px 15px; }
+.related-source {
+  font-size: 0.6rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 5px;
+}
+.related-title {
+  font-size: 0.84rem; font-weight: 600; line-height: 1.4; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .article-wrap { padding: 32px 16px 60px; }
+  .article-title { font-size: 1.65rem; }
+  .article-body { font-size: 0.98rem; line-height: 1.74; }
+  .article-body p:first-of-type::first-letter { font-size: 2.8em; }
+  .related-section { padding: 0 16px 72px; }
+  .related-grid { grid-template-columns: 1fr; }
+  .article-hero-img { height: 260px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ── Reading progress ──────────────────────────────────── -->
+<div class="progress-wrap"><div id="readProgress"></div></div>
+
+<!-- ── Hero image ───────────────────────────────────────── -->
+<div class="article-hero anim">
+  {% if article.hero_image %}
+  <img class="article-hero-img" src="{{ article.hero_image }}" alt="{{ article.title }}" loading="eager">
+  <div class="article-hero-overlay"></div>
+  {% else %}
+  <div class="article-hero-placeholder {{ article.category }}"></div>
+  {% endif %}
+</div>
+
+<!-- ── Article body ─────────────────────────────────────── -->
+<div class="article-wrap">
+
+  <div class="article-meta-top anim">
+    <span class="cat-badge {{ article.category }}">{{ article.category|upper }}</span>
+    <span class="source-label">{{ article.source }}</span>
+  </div>
+
+  <h1 class="article-title anim">{{ article.title }}</h1>
+
+  <div class="article-meta-row anim">
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      {{ article.read_time }} min read
+    </span>
+    <span class="meta-chip">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      {{ article.fetched_at }}
+    </span>
+    <a href="{{ article.link }}" target="_blank" rel="noopener" style="font-size:0.72rem; color:var(--text-3); text-decoration:underline; text-underline-offset:3px;">
+      Original ↗
+    </a>
+  </div>
+
+  <div class="article-body anim">
+    {% if article.full_content %}
+      {% for para in article.full_content.split('\n') %}
+        {% if para.strip() %}
+        <p>{{ para.strip() }}</p>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+    <div class="no-content-box">
+      <p>{{ article.summary }}</p>
+      <a href="{{ article.link }}" target="_blank" rel="noopener" class="read-original-btn">
+        Read Full Article
+        <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- ── Related ───────────────────────────────────────────── -->
+{% if related %}
+<div class="related-section">
+  <div class="related-header">Related Stories</div>
+  <div class="related-grid">
+    {% for r in related %}
+    <a href="/article/{{ r.id }}" class="related-card anim">
+      <div class="related-thumb">
+        {% if r.hero_image %}
+        <img src="{{ r.hero_image }}" alt="" loading="lazy">
+        {% else %}
+        <div class="related-thumb-placeholder"></div>
+        {% endif %}
+      </div>
+      <div class="related-body">
+        <div class="related-source">{{ r.source }}</div>
+        <div class="related-title">{{ r.title }}</div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* Reading progress bar */
+window.addEventListener('scroll', function() {
+  const el = document.getElementById('readProgress');
+  if (!el) return;
+  const h = document.body.scrollHeight - window.innerHeight;
+  el.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+}, { passive: true });
+</script>
+{% endblock %}

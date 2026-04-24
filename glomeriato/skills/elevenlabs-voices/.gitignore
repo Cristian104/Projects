@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.env
+.usage.json
+config.json
+samples/
+batch_output/
+sfx_output/
+*.mp3
+.cache/
+.data/
+.env.*
+!.env.example

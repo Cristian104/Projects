@@ -1,0 +1,160 @@
+{% extends "base.html" %} {% block content %}
+<style>
+  .prog-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+  .prog-header h1 { font-family:'Archivo',sans-serif; font-size:1.7rem; font-weight:900; color:var(--text-primary); line-height:1.2; }
+  .prog-header p { font-size:0.85rem; color:var(--text-muted); margin-top:3px; }
+  .prog-actions { display:flex; gap:10px; flex-wrap:wrap; }
+  .prog-list { display:grid; gap:12px; }
+  .prog-card { background:var(--surface); border:1px solid var(--border-subtle); border-radius:var(--r-lg); padding:18px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; transition:border-color 0.2s; }
+  .prog-card:hover { border-color:var(--border-medium); }
+  .prog-card.active-prog { border-color:var(--accent-border); background:var(--accent-dim); }
+  .prog-left { display:flex; align-items:center; gap:14px; min-width:0; }
+  .prog-icon { width:44px; height:44px; border-radius:var(--r-md); background:var(--surface-input); border:1px solid var(--border-subtle); display:flex; align-items:center; justify-content:center; color:var(--text-muted); font-size:1.1rem; flex-shrink:0; }
+  .prog-card.active-prog .prog-icon { background:var(--accent-dim); border-color:var(--accent-border); color:var(--accent); }
+  .prog-info h3 { font-family:'Archivo',sans-serif; font-size:0.95rem; font-weight:700; color:var(--text-primary); margin:0 0 3px; }
+  .prog-meta { font-size:0.78rem; color:var(--text-muted); }
+  .active-badge { font-size:0.65rem; font-weight:700; padding:2px 8px; background:var(--accent-dim); color:var(--accent); border:1px solid var(--accent-border); border-radius:99px; letter-spacing:0.06em; text-transform:uppercase; margin-left:8px; }
+  .prog-btns { display:flex; gap:8px; flex-shrink:0; }
+  .prog-btn-danger { width:32px; height:32px; border-radius:var(--r-sm); border:none; background:rgba(239,68,68,0.08); color:var(--danger); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:0.78rem; transition:background 0.15s; text-decoration:none; }
+  .prog-btn-danger:hover { background:rgba(239,68,68,0.18); }
+  .empty-state { text-align:center; padding:48px 24px; color:var(--text-muted); background:var(--surface); border:1px dashed var(--border-medium); border-radius:var(--r-lg); }
+  .empty-state i { font-size:2.5rem; margin-bottom:12px; opacity:0.3; display:block; }
+  .empty-state p { font-size:0.9rem; }
+</style>
+
+<div class="dashboard-content">
+
+  <div class="prog-header">
+    <div>
+      <h1><i class="fas fa-apple-alt" style="color:var(--accent); font-size:1.4rem; margin-right:10px;"></i>Nutrition Programs</h1>
+      <p>Manage your monthly meal plans and nutrition cycles.</p>
+    </div>
+    <div class="prog-actions">
+      <button onclick="document.getElementById('new-program-modal').classList.add('active')" class="btn-save">
+        <i class="fas fa-plus"></i> New Program
+      </button>
+      <button onclick="document.getElementById('pdf-import-modal').classList.add('active')" class="btn-sm" style="border-color:var(--accent-border); color:var(--accent);">
+        <i class="fas fa-file-pdf"></i> Import PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="prog-list">
+    {% for program in programs %}
+    <div class="prog-card {{ 'active-prog' if program.is_active }}">
+      <div class="prog-left">
+        <div class="prog-icon"><i class="fas fa-utensils"></i></div>
+        <div class="prog-info">
+          <h3>
+            {{ program.name }}
+            {% if program.is_active %}<span class="active-badge">Active</span>{% endif %}
+          </h3>
+          <span class="prog-meta">
+            <i class="fas fa-list-ul" style="margin-right:4px;"></i>{{ program.routines|length }} meal plans
+            &nbsp;·&nbsp;
+            <i class="fas fa-calendar-alt" style="margin-right:4px;"></i>Created {{ program.created_at.strftime('%d %b %Y') }}
+          </span>
+        </div>
+      </div>
+      <div class="prog-btns">
+        {% if not program.is_active %}
+        <a href="{{ url_for('gym.activate_program', program_id=program.id) }}" class="btn-sm">
+          <i class="fas fa-play"></i> Select
+        </a>
+        {% endif %}
+        <form action="{{ url_for('gym.duplicate_program', program_id=program.id) }}" method="POST" style="margin:0;">
+          <button type="submit" class="btn-sm" title="Duplicate"><i class="fas fa-copy"></i></button>
+        </form>
+        <a href="#" class="prog-btn-danger" title="Delete"><i class="fas fa-trash"></i></a>
+      </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-apple-alt"></i>
+      <p>No programs yet.<br>Create your first monthly nutrition program.</p>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<div id="pdf-import-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3><i class="fas fa-file-pdf" style="color: var(--accent, #3A7D52)"></i> Import Gym Program from PDF</h3>
+    <p style="font-size: 0.83rem; color: #888; margin: 4px 0 18px 0">
+      Uploads your coach's PDF and uses AI to extract the training program automatically.
+    </p>
+    <form action="{{ url_for('gym.import_pdf') }}" method="POST" enctype="multipart/form-data">
+      <div style="margin-bottom: 14px">
+        <label style="display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 6px">Program Name</label>
+        <input type="text" name="program_name" placeholder="e.g. March 2026 — Coach Plan" required
+               style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 9px 12px; color: #e8f5e9; font-size: 0.9rem; box-sizing: border-box;" />
+      </div>
+      <div style="margin-bottom: 14px">
+        <label style="display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 6px">PDF File</label>
+        <input type="file" name="pdf_file" accept=".pdf" required style="color: #ccc; font-size: 0.85rem;" />
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 18px">
+        <input type="checkbox" id="also-nutrition" name="also_nutrition" style="accent-color: var(--accent, #3A7D52)" />
+        <label for="also-nutrition" style="font-size: 0.83rem; color: #aaa; cursor: pointer">
+          Also create nutrition plan from this PDF
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel"
+                onclick="document.getElementById('pdf-import-modal').classList.remove('active')">Cancel</button>
+        <button type="submit" id="gym-pdf-submit-btn" class="btn-save"><i class="fas fa-magic"></i> Parse & Import</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PDF Loading Overlay -->
+<div id="gym-loading-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+  <div style="width:52px; height:52px; border:3px solid rgba(58,125,82,0.3); border-top-color:var(--accent,#3A7D52); border-radius:50%; animation:spin 0.9s linear infinite;"></div>
+  <div style="text-align:center">
+    <p style="color:#e8f5e9; font-size:1.05rem; margin:0 0 6px 0; font-weight:600">Parsing PDF with AI...</p>
+    <p style="color:#888; font-size:0.82rem; margin:0">This may take 15–30 seconds</p>
+  </div>
+</div>
+
+<script>
+document.getElementById('pdf-import-modal').querySelector('form').addEventListener('submit', function() {
+  document.getElementById('gym-pdf-submit-btn').disabled = true;
+  document.getElementById('gym-loading-overlay').style.display = 'flex';
+});
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<div id="new-program-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Create New Program</h3>
+    <form action="{{ url_for('gym.create_program') }}" method="POST">
+      <label>Program Name</label>
+      <input
+        type="text"
+        name="name"
+        placeholder="e.g. February 2026 - Strength"
+        required
+      />
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          onclick="
+            document
+              .getElementById('new-program-modal')
+              .classList.remove('active')
+          "
+        >
+          Cancel
+        </button>
+        <button type="submit" class="btn-save">Create</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

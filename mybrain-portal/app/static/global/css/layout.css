@@ -1,0 +1,191 @@
+/* ============================================================
+   LAYOUT.CSS — Sidebar + Main wrapper
+   ============================================================ */
+
+.main-wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: 230px;
+  background-color: var(--surface-1);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  transition: width 0.25s ease;
+}
+
+/* --- Logo --- */
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 36px;
+  padding: 0 8px;
+}
+
+.logo-badge {
+  width: 30px; height: 30px;
+  background: var(--accent);
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.logo-badge i { font-size: 0.85rem; color: #040904; }
+
+.logo-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
+}
+
+/* --- Nav links --- */
+.nav-links {
+  list-style: none;
+  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-links a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  color: var(--text-2);
+  text-decoration: none;
+  border-radius: var(--r-md);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: color 0.15s, background 0.15s;
+  position: relative;
+}
+.nav-links a:hover {
+  color: var(--text-1);
+  background: rgba(58, 125, 82, 0.06);
+}
+
+/* Active — green left-border glow */
+.nav-links li.active a {
+  color: var(--accent);
+  background: var(--accent-dim);
+}
+.nav-links li.active a::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; height: 60%;
+  width: 3px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+  box-shadow: 0 0 8px rgba(58, 125, 82, 0.5);
+}
+
+.nav-links i { width: 18px; text-align: center; font-size: 0.875rem; flex-shrink: 0; }
+
+.nav-logout a:hover { color: var(--danger); background: rgba(245, 101, 101, 0.06); }
+
+/* --- User area --- */
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 8px 4px;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 8px;
+}
+
+.user-avatar {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #040904;
+  flex-shrink: 0;
+}
+
+.user-info { display: flex; flex-direction: column; overflow: hidden; }
+.user-info .name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-link { font-size: 0.68rem; color: var(--text-3); text-decoration: none; transition: color 0.15s; }
+.logout-link:hover { color: var(--danger); }
+
+/* ============================================================
+   CONTENT AREA
+   ============================================================ */
+.content-area {
+  margin-left: 230px;
+  flex: 1;
+  padding: 32px 36px;
+  width: calc(100% - 230px);
+  position: relative;
+  min-height: 100vh;
+}
+
+/* --- Flash messages --- */
+.flash-messages { margin-bottom: 20px; }
+.alert {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  padding: 12px 16px;
+  border-radius: var(--r-md);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+/* ============================================================
+   GLASS CARD
+   ============================================================ */
+.card-glass {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1200px) {
+  .sidebar { width: 64px; align-items: center; padding: 20px 8px; }
+  .content-area { margin-left: 64px; width: calc(100% - 64px); padding: 24px 20px; }
+  .logo-text, .link-text, .user-info { display: none; }
+  .logo-area { padding: 0; justify-content: center; }
+  .logo-badge { margin: 0; }
+  .nav-links a { justify-content: center; padding: 12px; }
+  .nav-links li.active a::before { display: none; }
+  .user-area { border-top: none; justify-content: center; padding: 12px 0 0; }
+}

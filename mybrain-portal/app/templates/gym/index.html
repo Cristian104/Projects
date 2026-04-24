@@ -1,0 +1,421 @@
+{% extends "base.html" %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='gym/css/gym.css') }}" />
+
+<style>
+  /* ── Gym page overrides for new design system ──────────────────── */
+  .gym-title {
+    font-family: 'Archivo', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    margin: 0;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: inline-block;
+    border-bottom: 1px dashed rgba(255,255,255,0.15);
+  }
+
+  .gym-title:hover { opacity: 0.8; }
+
+  .gym-subtitle {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 4px 0 0 0;
+  }
+
+  .gym-header-wrapper {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  /* Hero card (up next) */
+  .hero-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .hero-card:hover { border-color: var(--border-medium); }
+
+  .hero-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .hero-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .hero-title {
+    font-family: 'Archivo', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  /* Routine rows */
+  .routine-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .routine-row {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+
+  .routine-row:hover {
+    border-color: var(--border-medium);
+    background: var(--surface-2);
+  }
+
+  .routine-row.active-row {
+    border-color: var(--accent-border);
+    background: var(--accent-dim);
+  }
+
+  .day-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    border-radius: 6px;
+    padding: 3px 10px;
+    flex-shrink: 0;
+  }
+
+  .routine-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .routine-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* card-glass alias */
+  .card-glass {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 20px 24px;
+  }
+
+  @media (max-width: 640px) {
+    .dashboard-content { max-width: 100% !important; }
+
+    /* Banner: shorter height + smaller text */
+    .dashboard-content > div:first-child { height: 110px !important; border-radius: var(--r-lg) !important; }
+    .dashboard-content > div:first-child > div:last-child { padding: 14px 16px !important; }
+    .dashboard-content > div:first-child h1 { font-size: 1.05rem !important; }
+    .dashboard-content > div:first-child p  { font-size: 0.78rem !important; }
+
+    .hero-card { padding: 14px 16px; }
+    .card-glass { padding: 14px 16px; }
+    .gym-header-wrapper { gap: 8px; }
+    .gym-header-wrapper > div:last-child { gap: 8px; }
+  }
+</style>
+
+<div class="dashboard-content" style="max-width: 800px; margin: 0 auto">
+
+  <!-- ── Banner ─────────────────────────────────────────────────── -->
+  <div style="width:100%;height:160px;border-radius:var(--r-xl);overflow:hidden;margin-bottom:24px;position:relative;">
+    <img src="{{ url_for('static', filename='global/img/gym-banner.png') }}" alt="" style="width:100%;height:100%;object-fit:cover;opacity:0.6;">
+    <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(15,23,42,0.85), transparent);display:flex;align-items:center;padding:24px;">
+      <div>
+        <a href="{{ url_for('gym.programs') }}" style="text-decoration:none;">
+          <div style="font-size:0.72rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;display:flex;align-items:center;gap:6px;">
+            ACTIVE PROGRAM <i class="fas fa-chevron-right" style="font-size:0.65em;"></i>
+          </div>
+          <h1 style="font-family:'Archivo',sans-serif;font-size:1.8rem;font-weight:900;color:var(--text-primary);margin:0;cursor:pointer;">{{ program.name }}</h1>
+        </a>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Day {{ current_user.current_gym_day }} of 7</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Header Actions ─────────────────────────────────────────── -->
+  <div class="gym-header-wrapper">
+    <div></div>
+    <div style="display: flex; gap: 10px">
+      <button
+        onclick="document.getElementById('pdf-import-modal').classList.add('active')"
+        class="btn-sm"
+        style="background: var(--accent-dim); border: 1px solid var(--accent-border); color: var(--accent); cursor: pointer;"
+      >
+        <i class="fas fa-file-pdf"></i> Import PDF
+      </button>
+      <a
+        href="{{ url_for('gym.library') }}"
+        class="btn-sm"
+      >
+        <i class="fas fa-book"></i> Library
+      </a>
+    </div>
+  </div>
+
+  <!-- ── Hero Card (Up Next) ────────────────────────────────────── -->
+  {% if next_routine and next_routine.name != 'Rest Day' %}
+  <div class="hero-card">
+    <div style="display: flex; align-items: center; gap: 20px">
+      <div class="hero-icon-circle"><i class="fas fa-fire"></i></div>
+      <div>
+        <span class="hero-label">Up Next</span>
+        <h2 class="hero-title">{{ next_routine.name }}</h2>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a
+        href="{{ url_for('gym.view_routine', routine_id=next_routine.id) }}"
+        class="btn-save"
+        style="text-decoration: none; padding: 10px 20px"
+        >Start</a
+      >
+      <a
+        href="{{ url_for('gym.skip_day') }}"
+        class="btn-cancel"
+        style="text-decoration: none;"
+        >Skip</a
+      >
+    </div>
+  </div>
+  {% elif next_routine %}
+  <div
+    class="hero-card"
+    style="border-color: rgba(255,255,255,0.08); opacity:0.75;"
+  >
+    <div style="display: flex; align-items: center; gap: 20px">
+      <div class="hero-icon-circle" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--text-muted);">
+        <i class="fas fa-bed"></i>
+      </div>
+      <div>
+        <span class="hero-label" style="color: var(--text-muted)">Up Next</span>
+        <h2 class="hero-title" style="color: var(--text-muted)">Rest Day</h2>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a
+        href="{{ url_for('gym.skip_day') }}"
+        class="btn-save"
+        style="text-decoration: none"
+        >Complete Rest</a
+      >
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Routine List ────────────────────────────────────────────── -->
+  <div class="routine-list">
+    {% for routine in routines %} {% if routine.name == 'Rest Day' %}
+    <div
+      class="routine-row"
+      style="opacity: 0.55; border-style: dashed;"
+      onclick="openRenameModal({{ routine.id }}, '{{ routine.name }}')"
+    >
+      <div style="display: flex; align-items: center; gap: 16px">
+        <div class="day-badge" style="color:var(--text-muted);background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08);">
+          DAY {{ routine.order_index }}
+        </div>
+        <div class="routine-name" style="color: var(--text-muted); font-style: italic">
+          Rest Day
+          <span
+            style="font-size: 0.7em; margin-left: 10px; border: 1px solid rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 4px; font-style:normal;"
+            >Tap to Assign</span
+          >
+        </div>
+      </div>
+      <div
+        style="display: flex; flex-direction: column; gap: 2px"
+        onclick="event.stopPropagation()"
+      >
+        {% if loop.index > 1 %}<a
+          href="{{ url_for('gym.swap_routine', routine_id=routine.id, direction='up') }}"
+          style="color: var(--text-muted); font-size: 0.7rem"
+          ><i class="fas fa-chevron-up"></i></a
+        >{% endif %} {% if loop.index < 7 %}<a
+          href="{{ url_for('gym.swap_routine', routine_id=routine.id, direction='down') }}"
+          style="color: var(--text-muted); font-size: 0.7rem"
+          ><i class="fas fa-chevron-down"></i></a
+        >{% endif %}
+      </div>
+    </div>
+
+    {% else %}
+    <div
+      class="routine-row {{ 'active-row' if next_routine and routine.id == next_routine.id else '' }}"
+      onclick="window.location.href='{{ url_for('gym.view_routine', routine_id=routine.id) }}'"
+    >
+      <div style="display: flex; align-items: center; gap: 16px">
+        <div class="day-badge">DAY {{ routine.order_index }}</div>
+        <div class="routine-name">
+          {{ routine.name }}
+          <div class="routine-meta">
+            {{ routine.exercises|length }} Exercises
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <div
+          style="display: flex; flex-direction: column; gap: 2px"
+          onclick="event.stopPropagation()"
+        >
+          {% if loop.index > 1 %}<a
+            href="{{ url_for('gym.swap_routine', routine_id=routine.id, direction='up') }}"
+            style="color: var(--text-muted); font-size: 0.7rem"
+            ><i class="fas fa-chevron-up"></i></a
+          >{% endif %} {% if loop.index < 7 %}<a
+            href="{{ url_for('gym.swap_routine', routine_id=routine.id, direction='down') }}"
+            style="color: var(--text-muted); font-size: 0.7rem"
+            ><i class="fas fa-chevron-down"></i></a
+          >{% endif %}
+        </div>
+
+        <button
+          class="btn-sm"
+          style="background: none; border: 1px solid var(--border-medium); padding:6px 10px;"
+          onclick="event.stopPropagation(); openRenameModal({{ routine.id }}, '{{ routine.name }}')"
+        >
+          <i class="fas fa-pen"></i>
+        </button>
+        <i class="fas fa-chevron-right" style="color: var(--border-medium);"></i>
+      </div>
+    </div>
+    {% endif %} {% endfor %}
+  </div>
+</div>
+
+<!-- ── Rename Modal ────────────────────────────────────────────── -->
+<div id="rename-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3>Assign Day</h3>
+    <form id="rename-form" method="POST">
+      <label>Workout Name</label>
+      <input
+        type="text"
+        id="routine-name-input"
+        name="name"
+        placeholder="e.g. Upper Body Power"
+        required
+      />
+      <div class="modal-actions">
+        <button
+          type="button"
+          class="btn-cancel"
+          onclick="document.getElementById('rename-modal').classList.remove('active')"
+        >
+          Cancel
+        </button>
+        <button type="submit" class="btn-save">Save</button>
+      </div>
+    </form>
+    <div style="text-align: center; margin-top: 15px">
+      <button
+        onclick="setRestDay()"
+        style="background: none; border: none; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; text-decoration: underline; font-family: inherit;"
+      >
+        Reset to Rest Day
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── PDF Import Modal ────────────────────────────────────────── -->
+<div id="pdf-import-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3><i class="fas fa-file-pdf" style="color: var(--accent)"></i> Import Routine from PDF</h3>
+    <p style="font-size: 0.83rem; color: var(--text-muted); margin: 4px 0 18px 0">
+      Upload your coach's PDF. AI will extract the full training program automatically.
+    </p>
+    <form action="{{ url_for('gym.import_pdf') }}" method="POST" enctype="multipart/form-data">
+      <label>Program Name</label>
+      <input type="text" name="program_name" placeholder="e.g. March 2026 — Coach Plan" required />
+      <label style="margin-top: 14px; display: block;">PDF File</label>
+      <input type="file" name="pdf_file" accept=".pdf" required style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 6px; background: var(--surface-input); border: 1px solid var(--border-subtle); border-radius: var(--r-md); padding: 8px 12px; width: 100%;" />
+      <div style="display: flex; align-items: center; gap: 8px; margin: 16px 0;">
+        <input type="checkbox" id="also-nutrition" name="also_nutrition" style="accent-color: var(--accent)" />
+        <label for="also-nutrition" style="font-size: 0.83rem; color: var(--text-muted); cursor: pointer; font-weight: normal; text-transform: none; letter-spacing: 0; margin: 0;">
+          Also create nutrition plan from this PDF
+        </label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel"
+                onclick="document.getElementById('pdf-import-modal').classList.remove('active')">Cancel</button>
+        <button type="submit" class="btn-save"><i class="fas fa-magic"></i> Parse &amp; Import</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openRenameModal(id, currentName) {
+    document.getElementById("rename-form").action =
+      `/gym/routine/update_name/${id}`;
+    document.getElementById("routine-name-input").value =
+      currentName === "Rest Day" ? "" : currentName;
+    document.getElementById("rename-modal").classList.add("active");
+  }
+
+  function setRestDay() {
+    document.getElementById("routine-name-input").value = "Rest Day";
+    document.getElementById("rename-form").submit();
+  }
+
+  // Close modal on outside click
+  window.onclick = function (event) {
+    const rename = document.getElementById("rename-modal");
+    const pdf = document.getElementById("pdf-import-modal");
+    if (event.target == rename) rename.classList.remove("active");
+    if (event.target == pdf) pdf.classList.remove("active");
+  };
+</script>
+{% endblock %}

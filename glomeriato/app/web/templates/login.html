@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Glomeriato | Terminal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "background":               "#131313",
+          "surface":                  "#131313",
+          "surface-dim":              "#131313",
+          "surface-bright":           "#3a3939",
+          "surface-container-lowest": "#0e0e0e",
+          "surface-container-low":    "#1c1b1b",
+          "surface-container":        "#201f1f",
+          "surface-container-high":   "#2a2a2a",
+          "surface-container-highest":"#353534",
+          "surface-variant":          "#353534",
+          "surface-tint":             "#28dfb5",
+          "on-surface":               "#e5e2e1",
+          "on-surface-variant":       "#bacac2",
+          "on-background":            "#e5e2e1",
+          "primary":                  "#46f1c5",
+          "primary-container":        "#00d4aa",
+          "primary-fixed":            "#55fcd0",
+          "primary-fixed-dim":        "#28dfb5",
+          "on-primary":               "#00382b",
+          "on-primary-container":     "#005643",
+          "on-primary-fixed":         "#002118",
+          "on-primary-fixed-variant": "#00513f",
+          "secondary":                "#ffb3b2",
+          "secondary-container":      "#b5032a",
+          "secondary-fixed":          "#ffdad9",
+          "secondary-fixed-dim":      "#ffb3b2",
+          "on-secondary":             "#680013",
+          "on-secondary-container":   "#ffc2c1",
+          "on-secondary-fixed":       "#410008",
+          "on-secondary-fixed-variant":"#920020",
+          "tertiary":                 "#d9d7d6",
+          "tertiary-container":       "#bdbbbb",
+          "tertiary-fixed":           "#e5e2e1",
+          "tertiary-fixed-dim":       "#c8c6c5",
+          "on-tertiary":              "#303030",
+          "on-tertiary-container":    "#4b4b4b",
+          "on-tertiary-fixed":        "#1b1b1c",
+          "on-tertiary-fixed-variant":"#474746",
+          "outline":                  "#85948d",
+          "outline-variant":          "#3b4a44",
+          "error":                    "#ffb4ab",
+          "error-container":          "#93000a",
+          "on-error":                 "#690005",
+          "on-error-container":       "#ffdad6",
+          "inverse-surface":          "#e5e2e1",
+          "inverse-on-surface":       "#313030",
+          "inverse-primary":          "#006b55",
+        },
+        fontFamily: {
+          "mono": ["JetBrains Mono", "monospace"],
+          "sans": ["Inter", "sans-serif"],
+        },
+        borderRadius: { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "9999px" },
+      },
+    },
+  }
+</script>
+<style>
+  body { font-family: 'Inter', sans-serif; background-color: #0d0d0d; background-image: radial-gradient(#1a1a1a 1px, transparent 1px); background-size: 24px 24px; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+</style>
+</head>
+<body class="text-on-surface antialiased min-h-screen flex flex-col items-center justify-center p-6">
+
+<main class="w-full max-w-[400px] flex flex-col items-center">
+  <!-- Login Card -->
+  <div class="w-full bg-[#141414] border border-[#1e1e1e] p-10 flex flex-col gap-8">
+    <!-- Header -->
+    <header class="flex flex-col gap-1 items-center text-center">
+      <h1 class="text-on-surface font-mono font-black text-2xl tracking-tighter uppercase">GLOMERIATO</h1>
+      <p class="text-[#666666] font-mono text-[10px] uppercase tracking-[0.2em]">Trading Terminal</p>
+    </header>
+
+    <!-- Form -->
+    <form method="post" action="/login" class="flex flex-col gap-6">
+      <div class="flex flex-col gap-2">
+        <label class="text-[#666666] text-[10px] font-mono uppercase tracking-widest px-1" for="password">
+          Access Key
+        </label>
+        <div class="relative">
+          <input
+            class="w-full bg-[#0d0d0d] border border-[#2a2a2a] text-primary font-mono text-sm px-4 py-3 focus:outline-none focus:border-primary-container transition-colors placeholder:text-[#333]"
+            id="password" name="password" type="password"
+            placeholder="••••••••••••••••"
+            autocomplete="current-password" autofocus
+          />
+          <div class="absolute right-3 top-1/2 -translate-y-1/2 text-[#333]">
+            <span class="material-symbols-outlined text-sm">key</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <button
+          class="w-full bg-primary-container text-on-primary-fixed font-mono font-bold text-xs py-4 hover:opacity-90 active:scale-[0.98] transition-all tracking-wider uppercase"
+          type="submit"
+        >
+          Enter Terminal
+        </button>
+
+        {% if error %}
+        <div class="flex items-center gap-2 px-1">
+          <span class="material-symbols-outlined text-secondary text-sm">error</span>
+          <p class="text-secondary font-mono text-[10px] uppercase tracking-tighter">{{ error }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- Footer -->
+  <footer class="mt-8 flex flex-col items-center gap-2">
+    <div class="flex items-center gap-3 text-[#444444] font-mono text-[9px] uppercase tracking-[0.25em]">
+      <span>Glomeriato v0.2</span>
+      <span class="w-1 h-1 bg-[#222] rounded-full"></span>
+      <span>AI-powered trading</span>
+    </div>
+    <div class="flex gap-1 mt-1">
+      <div class="w-8 h-[1px] bg-[#1a1a1a]"></div>
+      <div class="w-2 h-[1px] bg-primary/20"></div>
+      <div class="w-8 h-[1px] bg-[#1a1a1a]"></div>
+    </div>
+  </footer>
+</main>
+
+<!-- Subtle top accent line -->
+<div class="fixed top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/10 to-transparent"></div>
+
+</body>
+</html>

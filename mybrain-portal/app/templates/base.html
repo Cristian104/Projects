@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="icon" type="image/png" sizes="192x192"
+      href="{{ url_for('static', filename='global/img/favicon-192.png') }}" />
+    <link rel="icon" type="image/png" sizes="32x32"
+      href="{{ url_for('static', filename='global/img/favicon-192.png') }}" />
+    <link rel="apple-touch-icon"
+      href="{{ url_for('static', filename='global/img/favicon-192.png') }}" />
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MyBrain</title>
+
+    <!-- Fonts: Space Grotesk (UI) + Archivo Black (headings) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Archivo:wght@400;600;700;800;900&display=swap"
+      rel="stylesheet" />
+
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      /* ── Design Tokens ────────────────────────────────────────────── */
+      :root {
+        --bg: #0F172A;
+        --surface: #1E293B;
+        --surface-2: #162032;
+        --surface-input: #0F172A;
+        --accent: #22C55E;
+        --accent-dim: rgba(34,197,94,0.1);
+        --accent-border: rgba(34,197,94,0.25);
+        --text-primary: #F1F5F9;
+        --text-secondary: #CBD5E1;
+        --text-muted: #94A3B8;
+        --text-gray: #94A3B8;
+        --border-subtle: rgba(255,255,255,0.07);
+        --border-medium: rgba(255,255,255,0.12);
+        --danger: #EF4444;
+        --danger-red: #EF4444;
+        --warning: #F59E0B;
+        --accent-blue: #22C55E;
+        --r-sm: 6px;
+        --r-md: 10px;
+        --r-lg: 14px;
+        --r-xl: 18px;
+      }
+
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      html { overflow-x: hidden; }
+
+      body {
+        background: var(--bg);
+        color: var(--text-primary);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: var(--border-medium); border-radius: 2px; }
+
+      /* ── Layout ───────────────────────────────────────────────────── */
+      .main-wrapper {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* ── Sidebar ──────────────────────────────────────────────────── */
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 220px;
+        height: 100vh;
+        background: var(--surface);
+        border-right: 1px solid var(--border-subtle);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .logo-area {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 20px 16px 16px;
+        border-bottom: 1px solid var(--border-subtle);
+        flex-shrink: 0;
+      }
+
+      .logo-area img {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        flex-shrink: 0;
+      }
+
+      .logo-text {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 1rem;
+        color: var(--text-primary);
+        letter-spacing: -0.01em;
+      }
+
+      .logo-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        margin-left: auto;
+        flex-shrink: 0;
+        animation: pulse-dot 2.5s infinite;
+      }
+
+      @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.8); }
+      }
+
+      /* ── Nav Links ────────────────────────────────────────────────── */
+      .nav-links {
+        list-style: none;
+        padding: 12px 10px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .nav-links li a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: var(--r-md);
+        text-decoration: none;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: background 0.15s, color 0.15s, border-color 0.15s;
+        border-left: 2px solid transparent;
+      }
+
+      .nav-links li a:hover {
+        background: rgba(255,255,255,0.04);
+        color: var(--text-secondary);
+      }
+
+      .nav-links li.active a {
+        background: var(--accent-dim);
+        color: var(--accent);
+        border-left-color: var(--accent);
+      }
+
+      .nav-links li a i {
+        width: 16px;
+        text-align: center;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+      }
+
+      .nav-links li.nav-logout {
+        margin-top: auto;
+      }
+
+      .nav-links li.nav-logout a {
+        color: #64748B;
+      }
+
+      .nav-links li.nav-logout a:hover {
+        color: var(--danger);
+        background: rgba(239,68,68,0.06);
+      }
+
+      /* ── User Area ────────────────────────────────────────────────── */
+      .user-area {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-top: 1px solid var(--border-subtle);
+        flex-shrink: 0;
+      }
+
+      .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--accent-dim);
+        border: 1px solid var(--accent-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--accent);
+        flex-shrink: 0;
+        text-transform: uppercase;
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .user-info .name {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .user-info .logout-link {
+        font-size: 0.72rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        transition: color 0.15s;
+      }
+
+      .user-info .logout-link:hover {
+        color: var(--danger);
+      }
+
+      /* ── Content Area ─────────────────────────────────────────────── */
+      .content-area {
+        margin-left: 220px;
+        padding: 24px;
+        min-height: 100vh;
+        flex: 1;
+        min-width: 0;
+        overflow-x: hidden;
+      }
+
+      /* ── Flash Messages ───────────────────────────────────────────── */
+      .flash-messages {
+        margin-bottom: 16px;
+      }
+
+      .alert {
+        background: rgba(34,197,94,0.1);
+        border: 1px solid rgba(34,197,94,0.25);
+        color: var(--accent);
+        border-radius: var(--r-md);
+        padding: 10px 14px;
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+      }
+
+      /* ── Shared Component Overrides ───────────────────────────────── */
+      .btn-sm {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: var(--r-md);
+        font-size: 0.8rem;
+        font-weight: 600;
+        font-family: 'Space Grotesk', sans-serif;
+        cursor: pointer;
+        border: 1px solid var(--border-subtle);
+        background: var(--surface);
+        color: var(--text-secondary);
+        text-decoration: none;
+        transition: all 0.15s;
+      }
+
+      .btn-sm:hover {
+        border-color: var(--border-medium);
+        color: var(--text-primary);
+      }
+
+      .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--accent);
+        color: #0F172A;
+        border: none;
+        border-radius: var(--r-md);
+        padding: 9px 20px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        font-family: 'Space Grotesk', sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        transition: opacity 0.15s;
+      }
+
+      .btn-save:hover { opacity: 0.85; }
+
+      .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--surface-input);
+        color: var(--text-muted);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-md);
+        padding: 9px 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        font-family: 'Space Grotesk', sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.15s;
+      }
+
+      .btn-cancel:hover {
+        border-color: var(--border-medium);
+        color: var(--text-secondary);
+      }
+
+      /* ── Modal Base ───────────────────────────────────────────────── */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+      }
+
+      .modal-overlay.active { display: flex; }
+
+      .modal-box {
+        background: var(--surface);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--r-xl);
+        padding: 28px;
+        width: calc(100% - 32px);
+        max-width: 440px;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      @media (max-width: 640px) {
+        .modal-box { padding: 20px; border-radius: var(--r-lg); }
+        .modal-card { padding: 20px; width: calc(100% - 32px); max-width: none; }
+      }
+
+      .modal-box h3 {
+        font-family: 'Archivo', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: var(--text-primary);
+      }
+
+      .modal-box label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        margin-top: 14px;
+      }
+
+      .modal-box input,
+      .modal-box select {
+        width: 100%;
+        background: var(--surface-input);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--r-md);
+        padding: 10px 12px;
+        color: var(--text-primary);
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+
+      .modal-box input:focus,
+      .modal-box select:focus {
+        border-color: var(--accent);
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 24px;
+      }
+
+      /* Gym/delete modal variants */
+      .modal-card {
+        background: var(--surface);
+        border: 1px solid var(--border-medium);
+        border-radius: var(--r-xl);
+        padding: 28px;
+        width: 100%;
+        max-width: 440px;
+      }
+
+      .modal-card.delete-mode { border-color: rgba(239,68,68,0.3); }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .modal-header h3 {
+        font-family: 'Archivo', sans-serif;
+        font-size: 1rem;
+        font-weight: 800;
+        color: var(--danger);
+        margin: 0;
+      }
+
+      .btn-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+        cursor: pointer;
+        line-height: 1;
+        padding: 2px 6px;
+        border-radius: 4px;
+        transition: color 0.15s;
+      }
+
+      .btn-close:hover { color: var(--text-primary); }
+
+      .modal-body {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        line-height: 1.65;
+        margin-bottom: 20px;
+      }
+
+      .modal-body p { margin-bottom: 8px; }
+
+      .warning-text {
+        color: var(--warning);
+        font-size: 0.82rem;
+      }
+
+      .modal-footer {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+      }
+
+      .btn-danger-confirm {
+        background: var(--danger);
+        color: #fff;
+        border: none;
+        border-radius: var(--r-md);
+        padding: 9px 20px;
+        font-weight: 700;
+        font-size: 0.875rem;
+        font-family: 'Space Grotesk', sans-serif;
+        cursor: pointer;
+        transition: opacity 0.15s;
+      }
+
+      .btn-danger-confirm:hover { opacity: 0.85; }
+
+      /* ── Badges ───────────────────────────────────────────────────── */
+      .badge-mini {
+        font-size: 0.65rem;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 99px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .badge-work     { background: rgba(59,130,246,0.15); color: #60A5FA; border: 1px solid rgba(59,130,246,0.25); }
+      .badge-personal { background: rgba(167,139,250,0.15); color: #A78BFA; border: 1px solid rgba(167,139,250,0.25); }
+      .badge-dev      { background: rgba(251,146,60,0.15); color: #FB923C; border: 1px solid rgba(251,146,60,0.25); }
+      .badge-health   { background: rgba(34,197,94,0.12); color: #22C55E; border: 1px solid rgba(34,197,94,0.2); }
+
+      /* ── Page Transitions ─────────────────────────────────────────── */
+      @keyframes pageEnter {
+        from { opacity: 0; transform: translateY(12px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pageExit {
+        from { opacity: 1; transform: translateY(0); }
+        to   { opacity: 0; transform: translateY(-10px); }
+      }
+      .content-area {
+        animation: pageEnter 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .content-area.page-exiting {
+        animation: pageExit 0.22s ease-in forwards;
+        pointer-events: none;
+      }
+
+      /* ── Mobile ───────────────────────────────────────────────────── */
+      .desktop-only { display: block; }
+      .mobile-header { display: none; }
+      .mobile-topbar { display: none; }
+      .mobile-bottom-nav { display: none; }
+
+      /* Tablet: collapse sidebar to icons */
+      @media (max-width: 900px) and (min-width: 641px) {
+        .sidebar { width: 60px; }
+        .logo-text, .link-text, .user-info, .logo-dot { display: none; }
+        .logo-area { justify-content: center; padding: 16px 8px; }
+        .nav-links { padding: 10px 6px; }
+        .nav-links li a { padding: 10px; justify-content: center; gap: 0; border-left: none; border-radius: var(--r-md); }
+        .user-area { padding: 12px 8px; justify-content: center; }
+        .user-avatar { margin: 0; }
+        .content-area { margin-left: 60px; padding: 20px; }
+      }
+
+      /* Phone: full mobile layout */
+      @media (max-width: 640px) {
+        .sidebar { display: none; }
+        .content-area { margin-left: 0; padding: 68px 14px 78px; }
+        .desktop-only { display: none; }
+        .mobile-header { display: block; }
+        .mobile-topbar { display: flex; }
+        .mobile-bottom-nav { display: flex; }
+      }
+
+      /* ── Mobile Top Bar ─────────────────────────────────────────────── */
+      .mobile-topbar {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 300;
+        height: 56px;
+        background: rgba(30, 41, 59, 0.95);
+        border-bottom: 1px solid var(--border-subtle);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        gap: 10px;
+      }
+
+      .mobile-topbar-brand {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+
+      .mobile-topbar-brand img {
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        object-fit: cover;
+      }
+
+      .mobile-topbar-brand span {
+        font-family: 'Space Grotesk', sans-serif;
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+      }
+
+      .mobile-topbar-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: pulse-dot 2.5s infinite;
+        margin-left: auto;
+      }
+
+      /* ── Mobile Bottom Nav ──────────────────────────────────────────── */
+      .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        z-index: 300;
+        height: 64px;
+        background: rgba(30, 41, 59, 0.97);
+        border-top: 1px solid var(--border-subtle);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        align-items: center;
+        justify-content: space-around;
+        padding: 0 4px;
+      }
+
+      .mob-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        text-decoration: none;
+        color: var(--text-muted);
+        padding: 8px 10px;
+        border-radius: var(--r-md);
+        transition: color 0.15s;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .mob-nav-item i { font-size: 1.05rem; }
+      .mob-nav-item span { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.02em; white-space: nowrap; }
+      .mob-nav-item.active { color: var(--accent); }
+      .mob-nav-item:active { opacity: 0.7; }
+    </style>
+  </head>
+
+  <body>
+    <div class="main-wrapper">
+
+      <!-- SIDEBAR -->
+      <nav class="sidebar">
+        <div class="logo-area">
+          <img src="{{ url_for('static', filename='global/img/mybrain-logo.png') }}" alt="MyBrain"
+            style="width:32px;height:32px;border-radius:7px;object-fit:cover;flex-shrink:0;">
+          <span class="logo-text">MyBrain</span>
+          <span class="logo-dot"></span>
+        </div>
+
+        <ul class="nav-links">
+          <li class="{{ 'active' if request.endpoint == 'dashboard.dashboard_view' }}">
+            <a href="{{ url_for('dashboard.dashboard_view') }}">
+              <i class="fas fa-th-large"></i>
+              <span class="link-text">Dashboard</span>
+            </a>
+          </li>
+
+          {% if uhm('tasks') %}
+          <li>
+            <a href="#">
+              <i class="fas fa-check-square"></i>
+              <span class="link-text">Tasks</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if uhm('gym') %}
+          <li class="{{ 'active' if request.endpoint and 'gym' in request.endpoint }}">
+            <a href="{{ url_for('gym.index') }}">
+              <i class="fas fa-dumbbell"></i>
+              <span class="link-text">Workouts</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if uhm('nutrition') %}
+          <li class="{{ 'active' if request.endpoint and 'nutrition' in request.endpoint }}">
+            <a href="{{ url_for('nutrition.today') }}">
+              <i class="fas fa-utensils"></i>
+              <span class="link-text">Nutrition</span>
+            </a>
+          </li>
+          {% endif %}
+
+          {% if uhm('applications') %}
+          <li class="{{ 'active' if request.endpoint and 'apps' in request.endpoint }}">
+            <a href="{{ url_for('dashboard.all_apps') }}">
+              <i class="fas fa-th"></i>
+              <span class="link-text">Applications</span>
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="{{ 'active' if request.endpoint == 'dashboard.agents_view' }}">
+            <a href="{{ url_for('dashboard.agents_view') }}">
+              <i class="fas fa-robot"></i>
+              <span class="link-text">Agents</span>
+            </a>
+          </li>
+
+          <li>
+            <a href="#">
+              <i class="fas fa-server"></i>
+              <span class="link-text">Server</span>
+            </a>
+          </li>
+
+          {% if current_user.role == 'dev' %}
+          <li class="{{ 'active' if request.endpoint == 'dashboard.dev_panel' }}">
+            <a href="{{ url_for('dashboard.dev_panel') }}">
+              <i class="fas fa-terminal"></i>
+              <span class="link-text">Dev Panel</span>
+            </a>
+          </li>
+          {% endif %}
+
+          <li class="{{ 'active' if request.endpoint == 'dashboard.settings' }}">
+            <a href="{{ url_for('dashboard.settings') }}">
+              <i class="fas fa-sliders-h"></i>
+              <span class="link-text">Settings</span>
+            </a>
+          </li>
+
+          <li class="nav-logout">
+            <a href="{{ url_for('auth.logout') }}">
+              <i class="fas fa-sign-out-alt"></i>
+              <span class="link-text">Logout</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="user-area">
+          <div class="user-avatar">{{ current_user.username[0].upper() }}</div>
+          <div class="user-info">
+            <span class="name">{{ current_user.username }}</span>
+            <a href="{{ url_for('auth.logout') }}" class="logout-link">Sign out</a>
+          </div>
+        </div>
+      </nav>
+
+      <!-- MAIN CONTENT -->
+      <main class="content-area">
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash-messages">
+              {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <!-- MOBILE TOP BAR -->
+    <div class="mobile-topbar">
+      <div class="mobile-topbar-brand">
+        <img src="{{ url_for('static', filename='global/img/mybrain-logo.png') }}" alt="MyBrain">
+        <span>MyBrain</span>
+      </div>
+      <div class="mobile-topbar-dot"></div>
+    </div>
+
+    <!-- MOBILE BOTTOM NAV -->
+    <nav class="mobile-bottom-nav">
+      <a href="{{ url_for('dashboard.dashboard_view') }}"
+         class="mob-nav-item {{ 'active' if request.endpoint == 'dashboard.dashboard_view' else '' }}">
+        <i class="fas fa-th-large"></i>
+        <span>Home</span>
+      </a>
+      {% if uhm('gym') %}
+      <a href="{{ url_for('gym.index') }}"
+         class="mob-nav-item {{ 'active' if request.endpoint and 'gym' in request.endpoint else '' }}">
+        <i class="fas fa-dumbbell"></i>
+        <span>Workouts</span>
+      </a>
+      {% endif %}
+      {% if uhm('nutrition') %}
+      <a href="{{ url_for('nutrition.today') }}"
+         class="mob-nav-item {{ 'active' if request.endpoint and 'nutrition' in request.endpoint else '' }}">
+        <i class="fas fa-utensils"></i>
+        <span>Nutrition</span>
+      </a>
+      {% endif %}
+      {% if uhm('applications') %}
+      <a href="{{ url_for('dashboard.all_apps') }}"
+         class="mob-nav-item {{ 'active' if request.endpoint and 'apps' in request.endpoint else '' }}">
+        <i class="fas fa-th"></i>
+        <span>Apps</span>
+      </a>
+      {% endif %}
+      <a href="{{ url_for('dashboard.settings') }}"
+         class="mob-nav-item {{ 'active' if request.endpoint == 'dashboard.settings' else '' }}">
+        <i class="fas fa-sliders-h"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="{{ url_for('static', filename='dashboard/js/dashboard.js') }}"></script>
+
+    <script>
+      // ── Page transition: fade + slide on nav clicks ────────────────────
+      (function() {
+        const content = document.querySelector('.content-area');
+        if (!content) return;
+
+        document.querySelectorAll('.nav-links a, .logo-area, .mob-nav-item').forEach(function(el) {
+          el.addEventListener('click', function(e) {
+            var href = el.getAttribute('href') || el.querySelector('a')?.getAttribute('href');
+            if (!href || href === '#' || href.startsWith('javascript') || el.getAttribute('target') === '_blank') return;
+            e.preventDefault();
+            content.classList.add('page-exiting');
+            setTimeout(function() { window.location.href = href; }, 220);
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

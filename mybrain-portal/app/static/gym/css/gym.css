@@ -1,0 +1,109 @@
+/* ============================================================
+   GYM.CSS
+   ============================================================ */
+
+.gym-header-wrapper {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  margin-bottom: 24px; padding: 0 2px;
+}
+.gym-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem; font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px; color: var(--text-1);
+}
+.gym-subtitle {
+  margin: 0; color: var(--text-3);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem; letter-spacing: 0.04em;
+}
+
+/* Hero card */
+.hero-card {
+  background: linear-gradient(135deg, rgba(58,125,82,0.12), rgba(58,125,82,0.03));
+  border: 1px solid var(--accent-border);
+  padding: 20px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+  border-radius: var(--r-lg);
+  position: relative; overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute; top: -40px; left: -40px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(58,125,82,0.10), transparent 70%);
+  pointer-events: none;
+}
+
+.hero-icon-circle {
+  background: var(--accent);
+  width: 46px; height: 46px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.05rem; color: #040904;
+  box-shadow: 0 0 20px rgba(58,125,82,0.35);
+  flex-shrink: 0;
+}
+.hero-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; color: var(--accent);
+  font-weight: 600; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 4px;
+}
+.hero-title {
+  margin: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.15rem; font-weight: 700;
+  color: var(--text-1); letter-spacing: -0.02em;
+}
+.hero-actions { display: flex; gap: 10px; z-index: 2; flex-shrink: 0; }
+
+/* Routine list */
+.routine-list { display: flex; flex-direction: column; gap: 8px; }
+.routine-row {
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  padding: 14px 18px;
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+  border-radius: var(--r-md);
+}
+.routine-row:hover { background: var(--surface-3); border-color: var(--border-medium); transform: translateX(3px); }
+.routine-row.active-row { background: var(--accent-dim); border-color: var(--accent-border); }
+.routine-row.active-row .routine-name { color: var(--accent); }
+.routine-row.active-row .fa-chevron-right { color: var(--accent) !important; }
+
+.day-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.58rem; color: var(--text-3);
+  font-weight: 600; width: 46px; text-align: center;
+  letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0;
+}
+.routine-name { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 0.9rem; color: var(--text-1); }
+.routine-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--text-3); font-weight: 400; margin-top: 3px;
+}
+
+/* Empty state */
+.empty-state-box { text-align: center; padding: 48px 20px; color: var(--text-3); }
+.empty-state-icon { font-size: 1.75rem; margin-bottom: 14px; opacity: 0.25; }
+.btn-create-empty {
+  background: none;
+  border: 1px solid var(--border-medium);
+  color: var(--text-2); padding: 8px 18px;
+  border-radius: 20px; margin-top: 12px; cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+.btn-create-empty:hover { border-color: var(--accent-border); color: var(--accent); }
+
+@media (max-width: 768px) {
+  .gym-header-wrapper { flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .gym-title { font-size: 1.25rem; }
+  .hero-card { flex-wrap: wrap; gap: 10px; padding: 16px; }
+  .hero-actions { flex-wrap: wrap; }
+  .hero-actions .btn { min-height: 44px; }
+  .routine-row { min-height: 52px; padding: 12px 14px; }
+}

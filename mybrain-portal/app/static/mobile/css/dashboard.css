@@ -1,0 +1,199 @@
+/* ============================================================
+   MOBILE/CSS/DASHBOARD.CSS
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  html, body { overflow-x: hidden; width: 100%; background: var(--bg-base); }
+  .main-wrapper { flex-direction: column; width: 100%; overflow: hidden; }
+  .content-area { margin-left: 0 !important; width: 100% !important; padding: 0 0 80px 0; }
+
+  .welcome-banner {
+    padding: 20px 20px 0 !important;
+    text-align: left !important; margin-bottom: 0 !important;
+  }
+  .welcome-banner h1 { font-size: 1.2rem !important; margin-bottom: 2px !important; }
+  .welcome-banner p  { font-size: 0.65rem !important; color: var(--text-3) !important; margin: 0 !important; }
+
+  .dashboard-content {
+    padding: 16px;
+    max-width: 100vw;
+    display: flex; flex-direction: column;
+    gap: 20px;
+  }
+  .welcome-banner, .stats-row, .dashboard-split, .stats-layout-wrapper { margin-bottom: 0 !important; }
+
+  .panel-left { display: none !important; }
+  .dashboard-split { display: flex !important; flex-direction: column !important; }
+  .panel-right { width: 100% !important; max-width: 100% !important; }
+
+  .desktop-only { display: none !important; }
+  .mobile-header {
+    display: block !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--text-3);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  /* Stats strip */
+  .stats-row { display: flex; gap: 10px; }
+  .stat-card { padding: 14px 12px; flex: 1; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+  .stat-icon { width: 28px; height: 28px; font-size: 0.8rem; }
+  .stat-details h3 { display: none; }
+  .stat-details h2 { font-size: 1rem; margin: 0; }
+  .progress-track { height: 3px; margin-top: 4px; }
+
+  /* Charts grid */
+  .stats-layout-wrapper {
+    display: grid; grid-template-columns: 34% 62%; gap: 4%;
+    align-items: center; width: 100%;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-subtle);
+  }
+  .stats-col-left { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #radial-chart { width: 100%; display: flex; justify-content: center; align-items: center; transform: scale(0.85); transform-origin: center center; margin: 0; }
+  .radial-item.desktop-ring { display: none !important; }
+  .radial-item.mobile-ring  { display: flex !important; margin: 0; }
+  .radial-label { display: none; }
+  .stats-col-right { overflow: hidden; }
+  #habit-heatmap { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .habit-row { width: 100%; margin-bottom: 0 !important; }
+  .habit-row div:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem !important; margin-bottom: 4px !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text-2);
+  }
+  .habit-row > div:last-child {
+    display: flex; flex-wrap: nowrap !important; overflow-x: auto; gap: 5px;
+    padding: 2px 0 6px 0;
+    mask-image: linear-gradient(to right, black 85%, transparent 100%);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; -ms-overflow-style: none;
+  }
+  .habit-row > div:last-child::-webkit-scrollbar { display: none; width: 0; height: 0; }
+  .habit-dot {
+    width: 13px !important; height: 13px !important;
+    min-width: 13px !important; min-height: 13px !important;
+    border-radius: 3px !important;
+    flex-shrink: 0; aspect-ratio: 1 / 1;
+  }
+
+  /* Bottom nav bar */
+  .sidebar {
+    position: fixed !important; top: auto !important; bottom: 0 !important; left: 0;
+    width: 100%; height: 62px;
+    background: var(--surface-1);
+    border-top: 1px solid var(--border-subtle);
+    border-right: none;
+    display: flex; z-index: 9999;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.6);
+    padding: 0;
+  }
+  .nav-links {
+    width: 100%; justify-content: space-around;
+    padding: 0; margin: 0;
+    display: flex; align-items: center;
+    flex-direction: row; gap: 0;
+  }
+  .nav-links li { flex: 1; display: flex; justify-content: center; }
+  .nav-links a {
+    flex-direction: column; gap: 3px;
+    font-size: 0.62rem; color: var(--text-2);
+    padding: 8px 4px; border-radius: 0; justify-content: center;
+  }
+  .nav-links li.active a { color: var(--accent); background: none; }
+  .nav-links li.active a::before { display: none; }
+  .nav-links i { font-size: 1.1rem; width: auto; }
+  .sidebar .logo-area, .sidebar .user-area { display: none !important; }
+  .nav-logout { display: flex !important; }
+  .nav-logout a { color: var(--danger) !important; }
+
+  /* Flash toast */
+  .flash-messages {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    width: 90%; max-width: 340px; z-index: 10000; pointer-events: none;
+  }
+  .alert {
+    background: rgba(58,125,82,0.92); backdrop-filter: blur(12px);
+    color: #040904;
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 600;
+    padding: 10px 20px; text-align: center;
+    border-radius: 50px; border: none;
+    animation: slideDownFade 0.4s ease-out, fadeOut 0.4s forwards 4s;
+  }
+  @keyframes slideDownFade { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
+}
+
+  /* ── Task quick-add row ─────────────────────────────────────────── */
+  .quick-add-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .quick-add-row select,
+  .quick-add-row input[type="text"],
+  .quick-add-row input[type="date"] {
+    min-height: 44px !important;
+    font-size: 1rem !important;
+  }
+  .quick-add-row button { min-height: 44px !important; min-width: 44px !important; }
+
+  /* ── Task category pills ─────────────────────────────────────────── */
+  .cat-pill { padding: 8px 14px !important; font-size: 0.8rem !important; }
+
+  /* ── Modal max-width ─────────────────────────────────────────────── */
+  .modal-box, .modal-content { max-width: 92vw !important; width: 92vw !important; }
+  .color-dot { width: 32px !important; height: 32px !important; }
+
+  /* ── Agents page ─────────────────────────────────────────────────── */
+  .agents-body { grid-template-columns: 1fr !important; }
+  .agents-grid { grid-template-columns: 1fr 1fr !important; }
+  .chat-panel { height: 460px !important; }
+  .chat-panel .msg-sender { font-size: 0.72rem !important; }
+  .chat-panel .msg-bubble { font-size: 0.88rem !important; }
+  .chat-input { min-height: 44px !important; font-size: 0.9rem !important; }
+  .chat-send-btn { width: 44px !important; height: 44px !important; }
+
+  /* ── Gym workout page ────────────────────────────────────────────── */
+  .workout-header { flex-wrap: wrap !important; gap: 8px !important; }
+  .log-inputs { flex-direction: column !important; }
+  .log-inputs input { min-height: 44px !important; font-size: 1rem !important; }
+  .modifier-badges span { font-size: 0.8rem !important; }
+  .workout-exercise-card { padding: 14px !important; }
+
+  /* ── Gym progress page ───────────────────────────────────────────── */
+  .progress-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+  .progress-chart-wrap { width: 100% !important; }
+
+  /* ── Nutrition pages ─────────────────────────────────────────────── */
+  .meal-card, .plan-card { padding: 14px !important; }
+  .swap-pills { flex-wrap: wrap !important; gap: 6px !important; }
+  .add-form-grid { grid-template-columns: 1fr !important; }
+  .nutrition-day-grid { grid-template-columns: 1fr !important; }
+
+  /* ── Apps grid ───────────────────────────────────────────────────── */
+  .apps-grid { grid-template-columns: 1fr 1fr !important; gap: 12px !important; }
+  .app-card { padding: 16px 12px !important; }
+
+  /* ── General small text → ensure 14px min ───────────────────────── */
+  .agent-description,
+  .agent-meta-row,
+  .stat-details h2 { font-size: 0.875rem !important; }
+}
+
+/* Tighten bottom nav when many items */
+@media (max-width: 420px) {
+  .nav-links a { font-size: 0.55rem; padding: 6px 2px; }
+  .nav-links i { font-size: 1rem; }
+  .agents-grid { grid-template-columns: 1fr !important; }
+  .chat-panel { height: 380px !important; }
+}
+@media (max-width: 360px) {
+  /* On very small screens hide label text — icon-only nav */
+  .link-text { display: none; }
+  .nav-links a { padding: 10px 4px; gap: 0; }
+  .nav-links i { font-size: 1.1rem; }
+  .chat-panel { height: 340px !important; }
+}

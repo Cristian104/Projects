@@ -1,0 +1,128 @@
+{% extends "base.html" %} {% block content %}
+<style>
+  .progress-header { margin-bottom: 28px; }
+  .progress-header h1 { margin: 0; font-family: 'JetBrains Mono', monospace; }
+  .progress-header p { color: #888; margin: 4px 0 0 0; font-size: 0.85rem; }
+  .chart-card { background: var(--surface-2, #0F1C0E); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px; margin-bottom: 24px; }
+  .chart-card h3 { margin: 0 0 16px 0; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; }
+  .sessions-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+  .sessions-table th { color: #666; font-weight: 500; padding: 6px 10px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .sessions-table td { padding: 8px 10px; color: #ccc; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .sessions-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .pr-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ffd700; margin-right: 4px; }
+  .empty-state { text-align: center; padding: 50px 20px; color: #666; font-style: italic; border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px; }
+  .progress-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .sessions-table { min-width: 400px; }
+
+  @media (max-width: 640px) {
+    .dashboard-content { max-width: 100% !important; }
+    .progress-header h1 { font-size: 1.1rem; }
+    .chart-card { padding: 14px; }
+  }
+</style>
+
+<div class="dashboard-content" style="max-width: 850px; margin: 0 auto">
+  <div class="progress-header">
+    <a href="{{ url_for('gym.view_routine', routine_id=exercise.routine_id) }}" class="btn-back" style="margin-bottom: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; background: rgba(255,255,255,0.05); color: #aaa; text-decoration: none; font-size: 0.85rem;">
+      <i class="fas fa-arrow-left"></i> Back to Routine
+    </a>
+    <h1>{{ exercise.name }}</h1>
+    <p>Progress tracker • Target: {{ exercise.target_sets }} × {{ exercise.target_reps }}</p>
+  </div>
+
+  {% if chart_data %}
+  <div class="chart-card">
+    <h3><i class="fas fa-chart-line" style="color: var(--accent, #3A7D52); margin-right: 8px;"></i>Max Weight Over Time</h3>
+    <div id="progressChart"></div>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-dumbbell" style="font-size: 2rem; margin-bottom: 12px; display: block; opacity: 0.3;"></i>
+    No workout data yet. Start a session to track progress!
+  </div>
+  {% endif %}
+
+  {% if recent_logs %}
+  <div class="chart-card">
+    <h3><i class="fas fa-history" style="color: #888; margin-right: 8px;"></i>Recent Sets</h3>
+    <div class="progress-table-wrap">
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Set</th>
+          <th>Weight</th>
+          <th>Reps</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_logs %}
+        <tr>
+          <td>{{ log.date.strftime('%Y-%m-%d') }}</td>
+          <td>{{ log.set_number or 1 }}</td>
+          <td>{% if log.weight_used %}{{ log.weight_used }}kg{% else %}—{% endif %}</td>
+          <td>{{ log.reps_done or '—' }}</td>
+          <td>{% if log.is_personal_record %}<span class="pr-badge" style="background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.3); font-size: 0.68rem; padding: 1px 6px; border-radius: 10px; font-weight: 600;">PR</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div><!-- /.progress-table-wrap -->
+  </div>
+  {% endif %}
+</div>
+
+{% if chart_data %}
+<script>
+const chartData = {{ chart_data | tojson }};
+const prDates = {{ pr_dates | tojson }};
+
+const annotations = prDates.map(d => ({
+  x: new Date(d).getTime(),
+  borderColor: '#ffd700',
+  label: {
+    style: { color: '#000', background: '#ffd700', fontSize: '11px' },
+    text: 'PR'
+  }
+}));
+
+const options = {
+  chart: {
+    type: 'line',
+    height: 280,
+    background: 'transparent',
+    toolbar: { show: false },
+    fontFamily: "'JetBrains Mono', monospace"
+  },
+  theme: { mode: 'dark' },
+  series: [{
+    name: 'Max Weight (kg)',
+    data: chartData.map(d => ({ x: new Date(d.date).getTime(), y: d.weight || 0 }))
+  }],
+  stroke: { curve: 'smooth', width: 3 },
+  colors: ['#3A7D52'],
+  markers: { size: 5, colors: ['#3A7D52'], strokeColors: '#0F1C0E', strokeWidth: 2 },
+  xaxis: { type: 'datetime', labels: { style: { colors: '#666' } }, axisBorder: { show: false } },
+  yaxis: { labels: { style: { colors: '#666' }, formatter: v => v + 'kg' } },
+  grid: { borderColor: 'rgba(255,255,255,0.05)', strokeDashArray: 4 },
+  tooltip: { theme: 'dark', x: { format: 'dd MMM yyyy' } },
+  annotations: { xaxis: annotations }
+};
+
+const chart = new ApexCharts(document.querySelector('#progressChart'), options);
+chart.render();
+</script>
+{% endif %}
+
+<style>
+@media (max-width: 768px) {
+  #progressChart { width: 100% !important; }
+  .progress-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .progress-table { min-width: 500px; }
+  .sessions-table { min-width: 420px; }
+  .exercise-selector { flex-direction: column; gap: 8px; }
+  .exercise-selector select { width: 100%; }
+}
+</style>
+{% endblock %}

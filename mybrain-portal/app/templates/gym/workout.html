@@ -1,0 +1,142 @@
+{% extends "base.html" %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='gym/css/routine_detail.css') }}" />
+<style>
+  .workout-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .workout-exercise-card { background: var(--surface-2, #0F1C0E); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 20px; margin-bottom: 18px; }
+  .workout-exercise-card h4 { margin: 0 0 4px 0; font-family: 'JetBrains Mono', monospace; font-size: 1rem; }
+  .target-line { font-size: 0.82rem; color: #888; margin-bottom: 12px; }
+  .modifier-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .mod-badge { font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; font-family: 'JetBrains Mono', monospace; }
+  .mod-badge.per-side { background: rgba(58,125,82,0.25); color: #6fcf97; border: 1px solid rgba(58,125,82,0.4); }
+  .mod-badge.drop-set { background: rgba(231,76,60,0.15); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3); }
+  .mod-badge.rir { background: rgba(52,152,219,0.15); color: #5dade2; border: 1px solid rgba(52,152,219,0.3); }
+  .prev-best-line { font-size: 0.78rem; color: #666; margin-bottom: 14px; font-style: italic; }
+  .log-inputs { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+  .log-inputs .form-group { flex: 1; margin: 0; }
+  .log-inputs label { font-size: 0.75rem; color: #aaa; display: block; margin-bottom: 4px; }
+  .log-inputs input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; padding: 8px 10px; color: var(--text-1, #e8f5e9); font-size: 0.9rem; font-family: 'JetBrains Mono', monospace; box-sizing: border-box; }
+  .log-inputs input:focus { outline: none; border-color: var(--accent, #3A7D52); }
+  .btn-log-set { background: var(--accent, #3A7D52); color: white; border: none; border-radius: 8px; padding: 9px 18px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+  .btn-log-set:hover { background: #4a9d66; }
+  .sets-table { width: 100%; font-size: 0.82rem; border-collapse: collapse; margin-top: 10px; }
+  .sets-table th { color: #666; font-weight: 500; padding: 4px 8px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); font-family: 'JetBrains Mono', monospace; }
+  .sets-table td { padding: 6px 8px; color: #ccc; font-family: 'JetBrains Mono', monospace; border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .pr-badge { background: rgba(255,215,0,0.15); color: #ffd700; border: 1px solid rgba(255,215,0,0.3); font-size: 0.68rem; padding: 1px 6px; border-radius: 10px; font-weight: 600; }
+  .btn-delete-set { background: none; border: none; color: #666; cursor: pointer; padding: 2px 6px; transition: 0.2s; }
+  .btn-delete-set:hover { color: #e74c3c; }
+  .pr-flash { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ffd700, #ffb300); color: #000; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; z-index: 9999; animation: prFlash 2.5s ease forwards; pointer-events: none; }
+  @keyframes prFlash { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.9); } 15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+  .complete-workout-btn { width: 100%; padding: 16px; background: var(--accent, #3A7D52); color: white; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 20px; font-family: 'JetBrains Mono', monospace; transition: 0.2s; }
+  .complete-workout-btn:hover { background: #4a9d66; }
+
+  @media (max-width: 640px) {
+    .dashboard-content { max-width: 100% !important; }
+    .workout-header { flex-wrap: wrap; gap: 10px; }
+    .workout-header h1 { font-size: 1.1rem; }
+    .log-inputs { flex-wrap: wrap; }
+    .log-inputs .form-group { flex: 1 1 calc(50% - 5px); min-width: 0; }
+    .btn-log-set { width: 100%; margin-top: 4px; }
+    .workout-exercise-card { padding: 14px; }
+    .complete-workout-btn { padding: 14px; font-size: 0.95rem; }
+  }
+</style>
+
+<div class="dashboard-content" style="max-width: 800px; margin: 0 auto">
+  <div class="workout-header">
+    <div>
+      <h1 style="margin: 0; font-family: 'JetBrains Mono', monospace;">{{ routine.name }}</h1>
+      <p style="color: #888; margin: 4px 0 0 0; font-size: 0.85rem;">Day {{ routine.order_index }} • {{ routine.exercises|length }} Exercises</p>
+    </div>
+    <a href="{{ url_for('gym.view_routine', routine_id=routine.id) }}" class="btn-back">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  {% for exercise in routine.exercises %}
+  <div class="workout-exercise-card" data-exercise-id="{{ exercise.id }}">
+    <h4>{{ exercise.name }}{% if exercise.name_es_display %} <span style="color:#666; font-size:0.85em">/ {{ exercise.name_es_display }}</span>{% endif %}</h4>
+    <div class="target-line">Target: {{ exercise.target_sets }} sets × {{ exercise.target_reps }}</div>
+
+    <div class="modifier-badges">
+      {% if exercise.is_per_side %}
+      <span class="mod-badge per-side"><i class="fas fa-sync-alt"></i> Per Side</span>
+      {% endif %}
+      {% if exercise.has_drop_set %}
+      <span class="mod-badge drop-set"><i class="fas fa-arrow-down"></i> Drop Set</span>
+      {% endif %}
+      {% if exercise.rir_target is not none %}
+      <span class="mod-badge rir">RIR {{ exercise.rir_target }}</span>
+      {% endif %}
+    </div>
+
+    {% if prev_bests.get(exercise.id) %}
+    <div class="prev-best-line">
+      <i class="fas fa-history"></i> Previous best: {{ prev_bests[exercise.id].weight }}kg × {{ prev_bests[exercise.id].reps }} reps
+    </div>
+    {% else %}
+    <div class="prev-best-line"><i class="fas fa-star"></i> No previous data — first time!</div>
+    {% endif %}
+
+    <div class="log-inputs">
+      <div class="form-group">
+        <label>Weight (kg)</label>
+        <input type="number" step="0.5" class="weight-input" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Reps</label>
+        <input type="number" class="reps-input" placeholder="0" min="0">
+      </div>
+      <button class="btn-log-set" onclick="logSet(this, {{ exercise.id }}, '{{ session_id }}')">
+        Log Set
+      </button>
+    </div>
+
+    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+    <table class="sets-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Weight</th>
+          <th>Reps</th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody class="sets-tbody">
+      </tbody>
+    </table>
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align:center; padding: 40px; color: #666; border: 1px dashed rgba(255,255,255,0.1); border-radius: 12px;">
+    No exercises in this routine.
+  </div>
+  {% endfor %}
+
+  <button class="complete-workout-btn" onclick="completeWorkout({{ routine.id }})">
+    <i class="fas fa-check-circle"></i> Complete Workout
+  </button>
+</div>
+
+<script src="{{ url_for('static', filename='gym/js/workout.js') }}"></script>
+
+<style>
+@media (max-width: 768px) {
+  .log-inputs { flex-direction: column; gap: 8px; }
+  .log-inputs input { width: 100%; box-sizing: border-box; min-height: 44px; font-size: 1rem; }
+  .btn-log-set { min-height: 44px; width: 100%; }
+  .exercise-card { padding: 14px; }
+  .exercise-header { flex-wrap: wrap; gap: 8px; }
+  .complete-workout-btn {
+    position: sticky;
+    bottom: 80px;
+    width: calc(100% - 32px);
+    margin: 20px 16px 0;
+    box-sizing: border-box;
+    z-index: 10;
+  }
+  .sets-table { font-size: 0.82rem; }
+  .sets-table th, .sets-table td { padding: 6px 4px; }
+}
+</style>
+{% endblock %}

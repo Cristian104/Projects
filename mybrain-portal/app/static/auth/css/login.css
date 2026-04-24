@@ -1,0 +1,141 @@
+/* ============================================================
+   LOGIN.CSS
+   ============================================================ */
+
+.split-screen { display: flex; height: 100vh; width: 100vw; overflow: hidden; }
+
+/* Left pane */
+.left-pane {
+  flex: 1.4;
+  position: relative;
+  background-color: #040804;
+  display: flex; align-items: center; justify-content: center;
+  user-select: none;
+}
+#fluid-container { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 0; }
+#fluid-container canvas { width: 100%; height: 100%; display: block; filter: blur(20px); }
+.left-pane .overlay {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to right, rgba(0,0,0,0.65), rgba(0,0,0,0.2));
+  z-index: 1; pointer-events: none;
+}
+
+/* Quote carousel card */
+.carousel-container {
+  position: relative; z-index: 2;
+  background: rgba(6, 13, 7, 0.75);
+  padding: 36px 44px;
+  border-radius: var(--r-xl);
+  max-width: 520px; width: 80%;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(58, 125, 82, 0.18);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.55);
+  transition: height 0.5s cubic-bezier(0.25,0.1,0.25,1);
+  overflow: hidden;
+}
+.quote-icon svg {
+  width: 26px; height: 26px;
+  color: var(--accent);
+  margin-bottom: 20px;
+  display: block;
+}
+.carousel-content { transition: opacity 0.45s ease, transform 0.45s ease; opacity: 1; transform: translateY(0); }
+.quote-text {
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 1.15rem;
+  line-height: 1.65;
+  font-weight: 400;
+  color: var(--text-1);
+  margin-bottom: 24px;
+  min-height: 72px;
+}
+.quote-author {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-1);
+  letter-spacing: -0.01em;
+}
+.quote-author span {
+  display: block;
+  font-weight: 400;
+  font-size: 0.7rem;
+  color: var(--text-2);
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+.carousel-dots { margin-top: 28px; display: flex; gap: 6px; }
+.dot { height: 3px; width: 16px; background: rgba(255,255,255,0.12); border-radius: 2px; transition: width 0.3s, background 0.3s; }
+.dot.active { background: var(--accent); width: 32px; }
+
+/* Right pane */
+.right-pane {
+  flex: 1;
+  background-color: var(--bg-base);
+  display: flex; align-items: center; justify-content: center;
+  border-left: 1px solid var(--border-subtle);
+}
+
+.login-box { width: 100%; max-width: 360px; padding: 20px; }
+
+.login-box h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-1);
+  margin-bottom: 6px;
+}
+
+.sub-header { color: var(--text-2); margin-bottom: 36px; font-size: 0.875rem; font-family: 'IBM Plex Sans', sans-serif; }
+.sub-header a { color: var(--accent); text-decoration: none; font-weight: 500; }
+.sub-header a:hover { text-decoration: underline; }
+
+/* Inputs */
+.input-group { margin-bottom: 18px; }
+.input-group label {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-2);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+.input-group input {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--r-sm);
+  color: var(--text-1);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.925rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input-group input:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.input-group input::placeholder { color: var(--text-3); }
+
+.login-box .btn-primary { width: 100%; padding: 12px; font-size: 0.85rem; border-radius: var(--r-md); margin-top: 4px; }
+
+.footer-link { text-align: center; color: var(--text-3); font-size: 0.8rem; margin-top: 20px; font-family: 'IBM Plex Sans', sans-serif; }
+.footer-link a { color: var(--accent); text-decoration: none; font-weight: 500; }
+
+.flash-error {
+  color: var(--danger);
+  background: rgba(245,101,101,0.08);
+  border: 1px solid rgba(245,101,101,0.2);
+  padding: 10px 14px;
+  border-radius: var(--r-sm);
+  margin-top: 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  text-align: center;
+}

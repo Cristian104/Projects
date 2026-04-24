@@ -1,0 +1,73 @@
+services:
+  # --- OFFICIAL BOT (Gemini API brain) ---
+  bot-official:
+    build: .
+    container_name: bot_official
+    profiles: ["official"]
+    restart: unless-stopped
+    privileged: true
+    user: root
+    pid: "host"
+    env_file:
+      - .env
+      - .env.official
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - RUN_MODE=OFFICIAL
+      - DB_HOST=stacks-postgres
+      - PYTHONPATH=/app
+      - TZ=Europe/Warsaw
+    volumes:
+      - .:/app
+      - ./backups:/app/backups
+    networks:
+      - stacks-net
+    command: ["python3", "app/trading/strategy.py"]
+
+  # --- LAB BOT (For Gemini Testing) ---
+  bot-lab:
+    build: .
+    container_name: bot_lab
+    profiles: ["lab"]
+    restart: unless-stopped
+    privileged: true
+    user: root
+    pid: "host"
+    env_file:
+      - .env
+      - .env.lab
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - RUN_MODE=SIMULATION
+      - DB_HOST=stacks-postgres
+      - PYTHONPATH=/app
+      - TZ=Europe/Warsaw
+    volumes:
+      - .:/app
+    networks:
+      - stacks-net
+    command: ["python3", "app/trading/strategy.py"]
+
+  dashboard:
+    build: .
+    container_name: dashboard
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - PYTHONPATH=/app
+      - DB_HOST=stacks-postgres
+      - TZ=Europe/Warsaw
+    ports:
+      - "127.0.0.1:8501:8501"
+    volumes:
+      - .:/app
+      - ./data_lake:/app/data_lake
+    networks:
+      - stacks-net
+    command: ["uvicorn", "app.web.server:app", "--host", "0.0.0.0", "--port", "8501"]
+
+networks:
+  stacks-net:
+    external: true

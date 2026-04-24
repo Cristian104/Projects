@@ -1,0 +1,185 @@
+/* Nutrition Module Styles */
+.nutr-section { margin-bottom: 32px; }
+.nutr-section-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+  margin: 0 0 14px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nutr-section-title i { color: var(--accent, #3A7D52); }
+.nutr-progress-label { font-size: 0.8rem; color: #666; margin-bottom: 12px; font-family: 'JetBrains Mono', monospace; }
+
+/* Meal Cards */
+.nutr-meal-card {
+  background: var(--surface-2, #0F1C0E);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.nutr-meal-card.done {
+  border-color: rgba(58,125,82,0.35);
+  background: rgba(58,125,82,0.06);
+}
+.nutr-meal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.nutr-meal-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  margin: 0 0 4px 0;
+}
+.nutr-time-hint { font-size: 0.75rem; color: #666; }
+
+/* Ingredients */
+.nutr-ingredients { display: flex; flex-wrap: wrap; gap: 6px; }
+.nutr-ing-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  color: #ccc;
+  font-family: 'JetBrains Mono', monospace;
+}
+.nutr-swap-chip {
+  background: rgba(58,125,82,0.12);
+  border-color: rgba(58,125,82,0.25);
+  color: #6fcf97;
+}
+
+/* Protein swap buttons */
+.nutr-swap-group { display: flex; gap: 6px; flex-wrap: wrap; }
+.nutr-swap-pill {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  color: #aaa;
+  cursor: pointer;
+  transition: 0.15s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.nutr-swap-pill:hover { background: rgba(58,125,82,0.2); border-color: rgba(58,125,82,0.4); color: #6fcf97; }
+.nutr-swap-pill.selected { background: rgba(58,125,82,0.25); border-color: var(--accent, #3A7D52); color: #6fcf97; }
+
+/* Done button */
+.nutr-done-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  color: #aaa;
+  cursor: pointer;
+  transition: 0.15s;
+  white-space: nowrap;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+.nutr-done-btn:hover { background: rgba(58,125,82,0.15); border-color: rgba(58,125,82,0.4); color: #6fcf97; }
+.nutr-done-btn.active { background: rgba(58,125,82,0.2); border-color: var(--accent, #3A7D52); color: #6fcf97; }
+
+/* Protein swap box (detail page) */
+.nutr-protein-swap-box {
+  margin-top: 12px;
+  border: 1px solid rgba(58,125,82,0.25);
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: rgba(58,125,82,0.06);
+}
+.nutr-swap-label { font-size: 0.75rem; color: var(--accent, #3A7D52); margin-bottom: 8px; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+.nutr-swap-options { display: flex; flex-wrap: wrap; gap: 10px; }
+.nutr-swap-option { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; }
+.nutr-swap-name { color: #ccc; }
+.nutr-swap-qty { color: #666; font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+
+/* Water tracker */
+.nutr-water-card {
+  background: var(--surface-2, #0F1C0E);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 20px;
+}
+.nutr-water-display { display: flex; align-items: baseline; gap: 6px; margin-bottom: 12px; }
+.nutr-water-amount { font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 600; color: #5dade2; }
+.nutr-water-unit { color: #666; font-size: 0.85rem; }
+.nutr-water-bar-wrap { background: rgba(255,255,255,0.05); border-radius: 100px; height: 8px; margin-bottom: 14px; overflow: hidden; }
+.nutr-water-bar { background: linear-gradient(90deg, #2471a3, #5dade2); height: 100%; border-radius: 100px; transition: width 0.4s ease; }
+.nutr-water-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.nutr-water-btn {
+  background: rgba(52,152,219,0.12);
+  border: 1px solid rgba(52,152,219,0.25);
+  border-radius: 8px;
+  padding: 7px 14px;
+  color: #5dade2;
+  font-size: 0.83rem;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: 0.15s;
+}
+.nutr-water-btn:hover { background: rgba(52,152,219,0.22); border-color: rgba(52,152,219,0.5); }
+
+/* Supplements */
+.nutr-sup-group { margin-bottom: 14px; }
+.nutr-sup-timing-label {
+  font-size: 0.75rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+.nutr-sup-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface-2, #0F1C0E);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.nutr-sup-row:hover { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.09); }
+.nutr-sup-row.done { background: rgba(58,125,82,0.06); border-color: rgba(58,125,82,0.2); }
+.nutr-sup-check { font-size: 1rem; }
+.nutr-sup-info { display: flex; flex-direction: column; gap: 2px; }
+.nutr-sup-name { font-size: 0.88rem; color: #ccc; }
+.nutr-sup-dose { font-size: 0.75rem; color: #666; font-family: 'JetBrains Mono', monospace; }
+
+@media (max-width: 768px) {
+  .nutr-meal-card { padding: 14px 14px; }
+  .nutr-done-btn { min-height: 44px; padding: 10px 16px; font-size: 0.88rem; }
+  .nutr-swap-pill { min-height: 40px; padding: 8px 14px; font-size: 0.85rem; }
+  .nutr-water-btn { min-height: 44px; padding: 10px 16px; font-size: 0.88rem; }
+  .nutr-sup-row { min-height: 48px; padding: 12px 14px; }
+  .nutr-sup-name { font-size: 0.9rem; }
+  .nutr-meal-header { flex-wrap: wrap; gap: 8px; }
+  .nutr-swap-group { gap: 8px; }
+  .nutr-water-btns { gap: 8px; }
+  .nutr-water-amount { font-size: 1.6rem; }
+}
+
+/* Empty state */
+.nutr-empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 14px;
+  color: #666;
+}
+.nutr-empty-state i { font-size: 2.5rem; margin-bottom: 14px; display: block; opacity: 0.3; }
+.nutr-empty-state p { margin-bottom: 16px; }

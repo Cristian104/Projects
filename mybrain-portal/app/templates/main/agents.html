@@ -1,0 +1,850 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  /* ── Map old vars to new design system tokens ─────────────────────── */
+  .dashboard-content {
+    --surface-card: var(--surface, #1E293B);
+    --surface-input: #0F172A;
+    --border-subtle: rgba(255,255,255,0.07);
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
+  }
+
+  /* ── Page Layout ─────────────────────────────────────────────────── */
+  .agents-page {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 1.5rem;
+    height: calc(100vh - 2rem);
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────── */
+  .agents-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .agents-header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .gateway-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 1px solid;
+  }
+  .gateway-badge.online  { background: rgba(34,197,94,.1); color:#22C55E; border-color:rgba(34,197,94,.25); }
+  .gateway-badge.offline { background: rgba(239,68,68,.1); color:#EF4444; border-color:rgba(239,68,68,.25); }
+  .gateway-dot { width:7px; height:7px; border-radius:50%; background:currentColor; }
+  .gateway-badge.online .gateway-dot { animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  /* ── Main split: agents left, chat right ─────────────────────────── */
+  .agents-body {
+    display: grid;
+    grid-template-columns: 1fr min(420px, 45vw);
+    gap: 1.25rem;
+    min-height: 0;
+  }
+
+  /* ── Agent Cards ─────────────────────────────────────────────────── */
+  .agents-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 1rem;
+    align-content: start;
+    overflow-y: auto;
+  }
+  .agent-card {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 1.25rem;
+    transition: border-color .2s, transform .2s;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+  }
+  .agent-card:hover { transform: translateY(-1px); }
+  .agent-card::before {
+    content:'';
+    position:absolute;
+    top:0;left:0;right:0;
+    height:2px;
+    background: var(--agent-color);
+  }
+  .agent-card.active-chat {
+    border-color: var(--agent-color) !important;
+    box-shadow: 0 0 0 1px var(--agent-color);
+  }
+
+  .agent-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: .85rem;
+  }
+  .agent-avatar {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    background: var(--agent-color-dim);
+    border: 1px solid var(--agent-color-border);
+  }
+  .agent-status-badge {
+    font-size: .68rem;
+    font-weight: 600;
+    padding: .2rem .55rem;
+    border-radius: 99px;
+  }
+  .badge-online  { background:rgba(34,197,94,.12); color:#22C55E; border:1px solid rgba(34,197,94,.2); }
+  .badge-offline { background:rgba(148,163,184,.1); color:var(--text-muted); border:1px solid var(--border-subtle); }
+
+  .agent-name { font-size:1rem; font-weight:700; color:var(--text-primary); margin:0 0 .1rem; }
+  .agent-role { font-size:.72rem; font-weight:600; margin-bottom:.6rem; }
+  .agent-description { font-size:.78rem; color:var(--text-muted); line-height:1.55; margin-bottom:.85rem; }
+
+  .agent-meta { display:flex; flex-direction:column; gap:.3rem; }
+  .agent-meta-row { display:flex; align-items:center; gap:.45rem; font-size:.72rem; color:var(--text-muted); }
+  .agent-meta-row i { width:13px; text-align:center; opacity:.55; }
+  .agent-meta-row code {
+    background:var(--surface-input);
+    padding:.1rem .35rem;
+    border-radius:4px;
+    font-size:.68rem;
+    color:var(--text-secondary);
+  }
+
+  .chat-with-btn {
+    margin-top:.85rem;
+    width:100%;
+    padding:.45rem 0;
+    border-radius:8px;
+    border:1px solid var(--agent-color);
+    background:var(--agent-color-dim);
+    color:var(--agent-color);
+    font-size:.75rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .chat-with-btn:hover {
+    background: var(--agent-color);
+    color: #0F172A;
+  }
+  .chat-with-btn:disabled {
+    opacity:.4;
+    cursor:not-allowed;
+  }
+
+  /* ── Log Panel (Argos / Mundi) ───────────────────────────────────── */
+  .log-entry {
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color .15s;
+  }
+  .log-entry:hover { border-color: var(--agent-color, #555); }
+  .log-entry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .65rem .9rem;
+    cursor: pointer;
+    user-select: none;
+    gap: .75rem;
+  }
+  .log-entry-header:hover { background: var(--surface-input); }
+  .log-entry-left { display: flex; align-items: center; gap: .6rem; min-width: 0; }
+  .log-type-badge {
+    font-size: .65rem;
+    font-weight: 700;
+    padding: .15rem .5rem;
+    border-radius: 99px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge-daily    { background: rgba(167,139,250,.15); color: #A78BFA; border: 1px solid rgba(167,139,250,.25); }
+  .badge-weekly   { background: rgba(251,146,60,.15);  color: #FB923C; border: 1px solid rgba(251,146,60,.25); }
+  .badge-research { background: rgba(251,146,60,.15);  color: #FB923C; border: 1px solid rgba(251,146,60,.25); }
+  .badge-default  { background: rgba(148,163,184,.1);  color: var(--text-muted); border: 1px solid var(--border-subtle); }
+  .log-entry-ts { font-size: .7rem; color: var(--text-muted); white-space: nowrap; flex-shrink: 0; }
+  .log-entry-preview {
+    font-size: .75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    min-width: 0;
+  }
+  .log-toggle-icon { color: var(--text-muted); font-size: .7rem; flex-shrink: 0; transition: transform .2s; }
+  .log-entry.open .log-toggle-icon { transform: rotate(180deg); }
+  .log-entry-body {
+    display: none;
+    padding: .75rem .9rem 1rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: .78rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 420px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .log-entry.open .log-entry-body { display: block; }
+  .log-empty {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; height: 100%; gap: .5rem;
+    color: var(--text-muted); font-size: .8rem; text-align: center;
+  }
+
+  /* ── Chat Panel ───────────────────────────────────────────────────── */
+  .chat-panel {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .chat-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .9rem 1.1rem;
+    border-bottom: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+  .chat-header-left {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .chat-agent-avatar {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    background: rgba(34,197,94,.12);
+    border: 1px solid rgba(34,197,94,.2);
+  }
+  .chat-agent-name {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .chat-agent-sub {
+    font-size: .68rem;
+    color: var(--text-muted);
+  }
+  .chat-clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: .3rem .5rem;
+    border-radius: 6px;
+    font-size: .72rem;
+    transition: color .15s, background .15s;
+  }
+  .chat-clear-btn:hover { background:var(--surface-input); color:var(--text-secondary); }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    min-height: 0;
+  }
+  .chat-messages::-webkit-scrollbar { width:3px; }
+  .chat-messages::-webkit-scrollbar-thumb { background:var(--border-subtle); border-radius:2px; }
+
+  .chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: .5rem;
+    color: var(--text-muted);
+    font-size: .8rem;
+    text-align: center;
+  }
+  .chat-empty .empty-emoji { font-size: 2rem; }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 88%;
+    gap: .2rem;
+  }
+  .msg.user  { align-self: flex-end; align-items: flex-end; }
+  .msg.agent { align-self: flex-start; align-items: flex-start; }
+
+  .msg-sender {
+    font-size: .65rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 0 .5rem;
+  }
+  .msg-bubble {
+    padding: .6rem .85rem;
+    border-radius: 12px;
+    font-size: .82rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.user .msg-bubble {
+    background: #22C55E;
+    color: #0F172A;
+    font-weight: 500;
+    border-bottom-right-radius: 3px;
+  }
+  .msg.agent .msg-bubble {
+    background: var(--surface-input);
+    color: var(--text-primary);
+    border-bottom-left-radius: 3px;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .msg-thinking .msg-bubble {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .typing-dots { display:flex; gap:3px; }
+  .typing-dots span {
+    width:5px; height:5px;
+    border-radius:50%;
+    background:var(--text-muted);
+    animation: typing 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay:.2s; }
+  .typing-dots span:nth-child(3) { animation-delay:.4s; }
+  @keyframes typing { 0%,60%,100%{opacity:.25;transform:translateY(0)} 30%{opacity:1;transform:translateY(-3px)} }
+
+  /* Chat input */
+  .chat-input-area {
+    padding: .85rem 1rem;
+    border-top: 1px solid var(--border-subtle);
+    flex-shrink: 0;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: .5rem;
+    align-items: flex-end;
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--surface-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    padding: .6rem .85rem;
+    color: var(--text-primary);
+    font-size: .83rem;
+    font-family: inherit;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    outline: none;
+    transition: border-color .15s;
+    line-height: 1.4;
+  }
+  .chat-input:focus { border-color: #22C55E; }
+  .chat-input::placeholder { color: var(--text-muted); }
+  .chat-send-btn {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: #22C55E;
+    border: none;
+    color: #0F172A;
+    font-size: .9rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity .15s;
+  }
+  .chat-send-btn:hover { opacity: .85; }
+  .chat-send-btn:disabled { opacity: .4; cursor:not-allowed; }
+  .chat-hint {
+    font-size: .68rem;
+    color: var(--text-muted);
+    margin-top: .4rem;
+    text-align: right;
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    .agents-body { grid-template-columns: 1fr; }
+    .chat-panel { height: 480px; }
+    .agents-page { height: auto; }
+  }
+  @media (max-width: 600px) {
+    .agents-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<div class="dashboard-content">
+<div class="agents-page">
+
+  <!-- Header -->
+  <div class="agents-header">
+    <h1>AI Agents</h1>
+    <div class="gateway-badge {{ 'online' if gateway_online else 'offline' }}">
+      <span class="gateway-dot"></span>
+      OpenClaw {{ 'Online' if gateway_online else 'Offline' }}
+    </div>
+  </div>
+
+  <div class="agents-body">
+
+    <!-- Agent Cards -->
+    <div class="agents-grid">
+      {% for agent in agents %}
+      <div class="agent-card" id="card-{{ agent.id }}" style="
+        --agent-color: {{ agent.color }};
+        --agent-color-dim: {{ agent.color }}18;
+        --agent-color-border: {{ agent.color }}30;
+      ">
+        <div class="agent-top">
+          <div class="agent-avatar">{{ agent.emoji }}</div>
+          {% if gateway_online %}
+            <span class="agent-status-badge badge-online">● Active</span>
+          {% else %}
+            <span class="agent-status-badge badge-offline">Offline</span>
+          {% endif %}
+        </div>
+
+        <div class="agent-name">{{ agent.name }}</div>
+        <div class="agent-role" style="color:{{ agent.color }}">{{ agent.role }}</div>
+        <div class="agent-description">{{ agent.description }}</div>
+
+        <div class="agent-meta">
+          <div class="agent-meta-row">
+            <i class="fas fa-microchip"></i>
+            <code>{{ agent.model }}</code>
+          </div>
+          {% if agent.telegram %}
+          <div class="agent-meta-row">
+            <i class="fab fa-telegram"></i>
+            <span>{{ agent.telegram }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        {% if agent.can_chat %}
+        <button
+          class="chat-with-btn"
+          onclick="selectAgent('{{ agent.id }}', '{{ agent.name }}', '{{ agent.emoji }}', '{{ agent.color }}', 'chat', '{{ agent.agent_api_id }}')"
+          {% if not gateway_online %}disabled{% endif %}
+        >
+          <i class="fas fa-comment-alt" style="margin-right:.4rem"></i>
+          Chat with {{ agent.name }}
+        </button>
+        {% endif %}
+        {% if agent.view_type == 'log' or agent.id in ['argos', 'mundi'] %}
+        <button
+          class="chat-with-btn"
+          style="margin-top:.4rem; opacity:.75; font-size:.7rem;"
+          onclick="selectAgent('{{ agent.id }}', '{{ agent.name }}', '{{ agent.emoji }}', '{{ agent.color }}', 'log')"
+        >
+          <i class="fas fa-stream" style="margin-right:.4rem"></i>
+          View Activity Log
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Log Panel (Argos / Mundi) -->
+    <div class="chat-panel" id="logPanel" style="display:none;">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-agent-avatar" id="logAvatar">📡</div>
+          <div>
+            <div class="chat-agent-name" id="logAgentName">Argos</div>
+            <div class="chat-agent-sub" id="logAgentSub">Activity Log</div>
+          </div>
+        </div>
+        <button class="chat-clear-btn" onclick="refreshLog()">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+
+      <!-- Dispatch form — shown only for Mundi -->
+      <div id="mundiDispatch" style="display:none; padding:.75rem 1rem; border-bottom:1px solid var(--border-subtle); flex-shrink:0;">
+        <div style="display:flex; gap:.5rem; align-items:flex-end;">
+          <textarea id="mundiTask" class="chat-input" placeholder="Research topic for Mundi…" rows="1"
+            style="flex:1; min-height:36px; max-height:90px; font-size:.8rem;"></textarea>
+          <button onclick="dispatchMundi()" id="dispatchBtn"
+            style="height:36px; padding:0 .9rem; border-radius:8px; border:1px solid #FB923C; background:rgba(251,146,60,.15); color:#FB923C; font-size:.75rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:background .15s;">
+            <i class="fas fa-satellite-dish" style="margin-right:.35rem"></i>Dispatch
+          </button>
+        </div>
+        <div id="dispatchStatus" style="font-size:.68rem; color:var(--text-muted); margin-top:.35rem; min-height:.9rem;"></div>
+      </div>
+
+      <div class="chat-messages" id="logEntries" style="gap:.5rem;"></div>
+    </div>
+
+    <!-- Chat Panel -->
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-header">
+        <div class="chat-header-left">
+          <div class="chat-agent-avatar" id="chatAvatar">🐍</div>
+          <div>
+            <div class="chat-agent-name" id="chatAgentName">Vanitas</div>
+            <div class="chat-agent-sub">Primary Assistant · gemini-2.5-flash</div>
+          </div>
+        </div>
+        <button class="chat-clear-btn" onclick="clearChat()">
+          <i class="fas fa-trash-alt"></i> Clear
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chatMessages">
+        <div class="chat-empty" id="chatEmpty">
+          <span class="empty-emoji">🐍</span>
+          <span>Ask Vanitas anything.<br>Research, tasks, updates — all here.</span>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-row">
+          <textarea
+            id="chatInput"
+            class="chat-input"
+            placeholder="Message Vanitas…"
+            rows="1"
+            {% if not gateway_online %}disabled{% endif %}
+          ></textarea>
+          <button class="chat-send-btn" id="sendBtn" onclick="sendMessage()" {% if not gateway_online %}disabled{% endif %}>
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+        <div class="chat-hint">Enter to send &nbsp;·&nbsp; Shift+Enter for new line</div>
+      </div>
+    </div>
+
+  </div><!-- /agents-body -->
+</div><!-- /agents-page -->
+</div><!-- /dashboard-content -->
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────
+  let currentAgent = { id: 'main', name: 'Vanitas', emoji: '🐍', color: '#22C55E', mode: 'chat', apiId: 'main' };
+  const CHAT_URL      = '{{ url_for("dashboard.agents_chat") }}';
+  const HISTORY_URL   = (id) => `/agents/history/${id}`;
+  const CLEAR_URL     = (id) => `/agents/history/${id}/clear`;
+  const ACTIVITY_URL  = (id) => `/agents/activity/${id}`;
+  const SPAWN_URL     = '/agents/spawn';
+
+  // ── Agent selection ────────────────────────────────────────────────
+  async function selectAgent(id, name, emoji, color, mode = 'chat', apiId = null) {
+    currentAgent = { id, name, emoji, color, mode, apiId: apiId || id };
+
+    document.querySelectorAll('.agent-card').forEach(c => c.classList.remove('active-chat'));
+    document.getElementById('card-' + id)?.classList.add('active-chat');
+
+    if (mode === 'log') {
+      document.getElementById('chatPanel').style.display = 'none';
+      document.getElementById('logPanel').style.display  = 'flex';
+      document.getElementById('logAvatar').textContent   = emoji;
+      document.getElementById('logAgentName').textContent = name;
+      document.getElementById('logAgentSub').textContent  = 'Activity Log · auto-refreshes on open';
+      document.getElementById('mundiDispatch').style.display = (id === 'mundi') ? 'block' : 'none';
+      await loadActivityLog(id);
+    } else {
+      document.getElementById('logPanel').style.display  = 'none';
+      document.getElementById('chatPanel').style.display = 'flex';
+      document.getElementById('chatAvatar').textContent  = emoji;
+      document.getElementById('chatAgentName').textContent = name;
+      document.getElementById('chatInput').placeholder   = `Message ${name}…`;
+      await loadHistory(id);
+      document.getElementById('chatInput').focus();
+    }
+  }
+
+  // ── Activity Log (Argos / Mundi) ───────────────────────────────────
+  async function loadActivityLog(agentId) {
+    const wrap = document.getElementById('logEntries');
+    wrap.innerHTML = '<div class="log-empty"><span>⏳</span><span>Loading activity…</span></div>';
+
+    try {
+      const res  = await fetch(ACTIVITY_URL(agentId));
+      const data = await res.json();
+
+      if (data.error) throw new Error(data.error);
+      wrap.innerHTML = '';
+
+      if (!data.length) {
+        wrap.innerHTML = `<div class="log-empty">
+          <span style="font-size:2rem">${currentAgent.emoji}</span>
+          <span>${currentAgent.name} hasn't run yet.<br><small style="opacity:.5">Activity will appear here automatically.</small></span>
+        </div>`;
+        return;
+      }
+
+      data.forEach(entry => renderLogEntry(wrap, entry));
+      wrap.scrollTop = 0;
+    } catch (e) {
+      wrap.innerHTML = `<div class="log-empty"><span style="color:#EF4444">⚠ ${e.message}</span></div>`;
+    }
+  }
+
+  function renderLogEntry(wrap, entry) {
+    const ts = new Date(entry.timestamp);
+    const tsStr = ts.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' })
+                + ' · ' + ts.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+
+    const badgeClass = { daily:'badge-daily', weekly:'badge-weekly', research:'badge-research' }[entry.type] || 'badge-default';
+    const preview = (entry.content || '').split('\n').find(l => l.trim() && !l.startsWith('#')) || '';
+
+    const el = document.createElement('div');
+    el.className = 'log-entry';
+    el.innerHTML = `
+      <div class="log-entry-header" onclick="this.parentElement.classList.toggle('open')">
+        <div class="log-entry-left">
+          <span class="log-type-badge ${badgeClass}">${entry.type}</span>
+          <span class="log-entry-preview">${preview.slice(0, 80)}</span>
+        </div>
+        <span class="log-entry-ts">${tsStr}</span>
+        <i class="fas fa-chevron-down log-toggle-icon"></i>
+      </div>
+      <div class="log-entry-body">${entry.content || '(empty)'}</div>
+    `;
+    wrap.appendChild(el);
+  }
+
+  async function refreshLog() {
+    if (currentAgent.mode === 'log') await loadActivityLog(currentAgent.id);
+  }
+
+  async function loadHistory(agentId) {
+    const wrap = document.getElementById('chatMessages');
+    wrap.innerHTML = '<div class="chat-empty" id="chatEmpty"><span class="empty-emoji">⏳</span><span>Loading…</span></div>';
+
+    try {
+      const res = await fetch(HISTORY_URL(agentId));
+      const msgs = await res.json();
+
+      wrap.innerHTML = '';
+      if (!msgs.length) { showEmpty(); return; }
+
+      msgs.forEach(m => {
+        const sender = m.role === 'user' ? 'You' : currentAgent.name;
+        const sourceTag = m.source !== 'web' ? ` · ${m.source}` : '';
+        renderMsg(m.role, sender + sourceTag, m.content);
+      });
+      scrollToBottom();
+    } catch (e) {
+      wrap.innerHTML = '';
+      showEmpty();
+    }
+  }
+
+  function showEmpty() {
+    const wrap = document.getElementById('chatMessages');
+    if (document.getElementById('chatEmpty')) return;
+    wrap.innerHTML = `<div class="chat-empty" id="chatEmpty">
+      <span class="empty-emoji">${currentAgent.emoji}</span>
+      <span>Ask ${currentAgent.name} anything.<br><small style="opacity:.5">History is saved across sessions.</small></span>
+    </div>`;
+  }
+
+  // ── Send ───────────────────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const message = input.value.trim();
+    if (!message) return;
+
+    renderMsg('user', 'You', message);
+    input.value = '';
+    autoResize(input);
+
+    const thinkingId = appendThinking();
+    setLoading(true);
+
+    try {
+      const res = await fetch(CHAT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message,
+          agent: currentAgent.id,
+          api_agent: currentAgent.apiId,
+        }),
+      });
+
+      const data = await res.json();
+      removeThinking(thinkingId);
+
+      if (data.reply) {
+        renderMsg('agent', currentAgent.name, data.reply);
+      } else {
+        appendError(data.error || 'No response from agent.');
+      }
+    } catch (err) {
+      removeThinking(thinkingId);
+      appendError('Connection error: ' + err.message);
+    }
+
+    setLoading(false);
+    scrollToBottom();
+    input.focus();
+  }
+
+  // ── DOM helpers ────────────────────────────────────────────────────
+  function renderMsg(role, sender, text) {
+    document.getElementById('chatEmpty')?.remove();
+    const wrap = document.getElementById('chatMessages');
+    const msg = document.createElement('div');
+    msg.className = `msg ${role}`;
+    const senderEl = document.createElement('div');
+    senderEl.className = 'msg-sender';
+    senderEl.textContent = sender;
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.textContent = text;
+    msg.appendChild(senderEl);
+    msg.appendChild(bubble);
+    wrap.appendChild(msg);
+  }
+
+  let thinkingCounter = 0;
+  function appendThinking() {
+    document.getElementById('chatEmpty')?.remove();
+    const id = 'think-' + (++thinkingCounter);
+    const wrap = document.getElementById('chatMessages');
+    const msg = document.createElement('div');
+    msg.className = 'msg agent msg-thinking';
+    msg.id = id;
+    const senderEl = document.createElement('div');
+    senderEl.className = 'msg-sender';
+    senderEl.textContent = currentAgent.name;
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-bubble';
+    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    msg.appendChild(senderEl);
+    msg.appendChild(bubble);
+    wrap.appendChild(msg);
+    scrollToBottom();
+    return id;
+  }
+
+  function removeThinking(id) { document.getElementById(id)?.remove(); }
+
+  function appendError(text) {
+    const wrap = document.getElementById('chatMessages');
+    const el = document.createElement('div');
+    el.style.cssText = 'text-align:center;font-size:.72rem;color:#EF4444;padding:.25rem 0;';
+    el.textContent = '⚠ ' + text;
+    wrap.appendChild(el);
+  }
+
+  async function clearChat() {
+    await fetch(CLEAR_URL(currentAgent.id), { method: 'POST' });
+    document.getElementById('chatMessages').innerHTML = '';
+    showEmpty();
+  }
+
+  function scrollToBottom() {
+    const wrap = document.getElementById('chatMessages');
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  function setLoading(on) {
+    document.getElementById('sendBtn').disabled = on;
+    document.getElementById('chatInput').disabled = on;
+  }
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  // ── Mundi Dispatch ─────────────────────────────────────────────────
+  async function dispatchMundi() {
+    const task = document.getElementById('mundiTask').value.trim();
+    if (!task) return;
+    const btn = document.getElementById('dispatchBtn');
+    const status = document.getElementById('dispatchStatus');
+    btn.disabled = true;
+    status.textContent = 'Dispatching…';
+    try {
+      const res = await fetch(SPAWN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent: 'mundi', task }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById('mundiTask').value = '';
+        status.style.color = '#22C55E';
+        status.textContent = '✓ Mundi dispatched — activity will appear below when done';
+        setTimeout(() => { status.textContent = ''; status.style.color = ''; }, 6000);
+      } else {
+        status.style.color = '#EF4444';
+        status.textContent = '⚠ ' + (data.error || 'Failed to dispatch');
+      }
+    } catch (e) {
+      status.style.color = '#EF4444';
+      status.textContent = '⚠ Connection error';
+    }
+    btn.disabled = false;
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('chatInput');
+    if (!input) return;
+
+    input.addEventListener('input', () => autoResize(input));
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+
+    const mundiInput = document.getElementById('mundiTask');
+    if (mundiInput) {
+      mundiInput.addEventListener('input', () => autoResize(mundiInput));
+      mundiInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); dispatchMundi(); }
+      });
+    }
+
+    document.getElementById('card-main')?.classList.add('active-chat');
+    loadHistory('main');
+    // Log panel hidden by default, chat panel shown
+    document.getElementById('logPanel').style.display  = 'none';
+    document.getElementById('chatPanel').style.display = 'flex';
+  });
+</script>
+{% endblock %}

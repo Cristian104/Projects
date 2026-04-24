@@ -1,0 +1,83 @@
+site_name: My Brain — Knowledge Base
+site_author: Jorg
+site_description: Central documentation for all infrastructure, bots, and services
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.instant
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - toc.integrate
+  palette:
+    scheme: slate
+    primary: green
+    accent: light green
+  font:
+    code: JetBrains Mono
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+
+  - Infrastructure:
+    - Overview: infrastructure/overview.md
+    - VPS & Services: infrastructure/vps.md
+    - Docker Services: infrastructure/docker.md
+    - Cloudflare Tunnels: infrastructure/tunnels.md
+    - Backups: infrastructure/backups.md
+
+  - Security:
+    - Overview: security/overview.md
+    - SSH Hardening: security/ssh.md
+    - Firewall: security/firewall.md
+    - Cloudflare Zero Trust: security/cloudflare-zt.md
+    - fail2ban: security/fail2ban.md
+
+  - Services:
+    - MyBrain Portal:
+      - Overview: mybrain/overview.md
+      - Modules: mybrain/modules.md
+      - Gym Module: mybrain/gym.md
+      - Nutrition Module: mybrain/nutrition.md
+      - Development: mybrain/development.md
+    - OpenClaw & Agents:
+      - Overview: openclaw/overview.md
+      - Vanitas: openclaw/vanitas.md
+      - Peccata: openclaw/peccata.md
+      - Mundi: openclaw/mundi.md
+      - Argos: openclaw/argos.md
+    - Morning Brief:
+      - Overview: morning-brief/overview.md
+    - Trading Bot:
+      - Overview: trading-bot/overview.md
+      - Architecture: trading-bot/architecture.md
+      - Operations: trading-bot/operations.md
+      - T212 API: trading-bot/t212-api.md
+      - Changelog: trading-bot/changelog.md
+      - V2.2 Release Notes: trading-bot/v2-2-release.md
+      - Trading Concepts (Plain English): trading-bot/trading-concepts.md
+      - Components:
+        - Sentinel: trading-bot/components/sentinel.md
+        - QuantBrain: trading-bot/components/brain.md
+        - Guardian: trading-bot/components/guardian.md
+      - Architecture Decisions:
+        - ADR-003 Position UPSERT: trading-bot/decisions/adr-003.md
+        - ADR-004 Gemini Backend: trading-bot/decisions/adr-004.md
+        - ADR-005 Guardian Split Loop: trading-bot/decisions/adr-005.md
+
+  - Operations:
+    - Runbooks: operations/runbooks.md
+    - Cron Jobs: operations/cron.md
+    - Monitoring: operations/monitoring.md
+
+  - Research:
+    - Index: research/index.md
+    - AI Income Generation 2025: research/ai-income-2025.md

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<!-- Anti-FOUC: set theme before CSS paints -->
+<script>(function(){var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',t);})();</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Intelligence Feed{% endblock %}</title>
+<meta name="description" content="{% block meta_desc %}AI-curated tech &amp; world news.{% endblock %}">
+<meta property="og:image" content="/static/images/og-image.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="/static/images/og-image.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap" rel="stylesheet">
+<style>
+/* ─────────────────────────────────────────────────────────
+   TOKENS — Dark (default)
+───────────────────────────────────────────────────────── */
+:root, [data-theme="dark"] {
+  --bg:          #000000;
+  --surface:     #0f0f0f;
+  --surface-2:   #1a1a1a;
+  --surface-3:   #252525;
+  --border:      rgba(255,255,255,0.08);
+  --border-h:    rgba(255,255,255,0.16);
+  --text:        #f5f5f7;
+  --text-2:      #a1a1a6;
+  --text-3:      #6e6e73;
+  --shadow-sm:   rgba(0,0,0,0.4);
+  --shadow-lg:   rgba(0,0,0,0.6);
+  --header-bg:   rgba(0,0,0,0.82);
+  --red:         #ff375f;
+  --red-bg:      rgba(255,55,95,0.12);
+  --red-border:  rgba(255,55,95,0.28);
+  --blue:        #0a84ff;
+  --blue-bg:     rgba(10,132,255,0.12);
+  --blue-border: rgba(10,132,255,0.28);
+  --orange:      #ff9f0a;
+  --green:       #30d158;
+  --purple:      #bf5af2;
+}
+
+/* ─────────────────────────────────────────────────────────
+   TOKENS — Light
+───────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:          #f5f5f7;
+  --surface:     #ffffff;
+  --surface-2:   #f0f0f5;
+  --surface-3:   #e5e5ea;
+  --border:      rgba(0,0,0,0.07);
+  --border-h:    rgba(0,0,0,0.16);
+  --text:        #1d1d1f;
+  --text-2:      #515154;
+  --text-3:      #86868b;
+  --shadow-sm:   rgba(0,0,0,0.06);
+  --shadow-lg:   rgba(0,0,0,0.12);
+  --header-bg:   rgba(245,245,247,0.82);
+  --red:         #d70015;
+  --red-bg:      rgba(215,0,21,0.07);
+  --red-border:  rgba(215,0,21,0.2);
+  --blue:        #0071e3;
+  --blue-bg:     rgba(0,113,227,0.07);
+  --blue-border: rgba(0,113,227,0.2);
+  --orange:      #c45200;
+  --green:       #1a7f37;
+  --purple:      #9c27b0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESET & BASE
+───────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background 0.25s, color 0.25s;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 2px; }
+
+/* ─────────────────────────────────────────────────────────
+   HEADER
+───────────────────────────────────────────────────────── */
+.header {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--header-bg);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  transition: background 0.25s, border-color 0.25s;
+}
+.header-inner {
+  max-width: 1320px; margin: 0 auto;
+  height: 56px; padding: 0 24px;
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* Logo */
+.logo {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 0.7rem; font-weight: 700;
+  letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--text); white-space: nowrap; flex-shrink: 0;
+  margin-right: 8px;
+}
+.logo-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red); flex-shrink: 0;
+  animation: pulse-dot 2.2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--red) 60%, transparent); }
+  50%       { box-shadow: 0 0 0 7px transparent; }
+}
+
+/* Nav tabs */
+.header-nav {
+  display: flex; align-items: center; gap: 2px;
+  margin-right: 4px;
+}
+.nav-tab {
+  padding: 5px 14px; border-radius: 20px; border: none; background: none;
+  font-size: 0.76rem; font-weight: 600; color: var(--text-3);
+  transition: all 0.15s; white-space: nowrap; line-height: 1;
+}
+.nav-tab:hover { color: var(--text); background: var(--surface-2); }
+.nav-tab.active        { color: var(--text); background: var(--surface-2); border: 1px solid var(--border-h); padding: 4px 13px; }
+.nav-tab.active.tech          { color: #fff; background: var(--blue);   border-color: var(--blue); }
+.nav-tab.active.world         { color: #fff; background: var(--red);    border-color: var(--red); }
+.nav-tab.active.entertainment { color: #fff; background: var(--purple); border-color: var(--purple); }
+[data-theme="light"] .nav-tab.active        { color: var(--text); }
+[data-theme="light"] .nav-tab.active.tech          { color: #fff; }
+[data-theme="light"] .nav-tab.active.world         { color: #fff; }
+[data-theme="light"] .nav-tab.active.entertainment { color: #fff; }
+
+/* Separator */
+.v-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; margin: 0 6px; }
+
+/* Time pills */
+.header-time { display: flex; align-items: center; gap: 2px; }
+.time-pill {
+  padding: 4px 10px; border-radius: 20px; border: 1px solid transparent;
+  font-size: 0.7rem; font-weight: 600; color: var(--text-3);
+  transition: all 0.15s; white-space: nowrap; line-height: 1;
+}
+.time-pill:hover { color: var(--text); border-color: var(--border); }
+.time-pill.active { color: var(--text); border-color: var(--border-h); background: var(--surface-2); }
+
+/* Live stats */
+.header-stats {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.67rem; color: var(--text-3); white-space: nowrap;
+}
+.stat-live { display: flex; align-items: center; gap: 5px; }
+.stat-green-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--green);
+  animation: blink 2.5s ease-in-out infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.25; }
+}
+.header-stats strong { color: var(--text-2); font-weight: 600; }
+
+/* Theme toggle */
+.theme-toggle {
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text-3);
+  flex-shrink: 0; transition: all 0.15s;
+}
+.theme-toggle:hover { background: var(--surface-3); color: var(--text); border-color: var(--border-h); }
+.theme-toggle svg { width: 14px; height: 14px; stroke-width: 2; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+[data-theme="dark"]  .icon-moon { display: none; }
+[data-theme="dark"]  .icon-sun  { display: block; }
+[data-theme="light"] .icon-sun  { display: none; }
+[data-theme="light"] .icon-moon { display: block; }
+
+/* ─────────────────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────────────────── */
+.anim {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
+              transform 0.5s cubic-bezier(0.16,1,0.3,1);
+}
+.anim.in { opacity: 1; transform: none; }
+
+/* Responsive: hide secondary header items on mobile */
+@media (max-width: 768px) {
+  .header-stats { display: none; }
+  .header-time  { display: none; }
+  .header-inner { padding: 0 16px; gap: 8px; }
+}
+@media (max-width: 480px) {
+  .logo span.logo-label { display: none; }
+  .nav-tab { padding: 4px 10px; font-size: 0.72rem; }
+}
+</style>
+{% block head_extra %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Header ───────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span class="logo-dot"></span>
+      <span class="logo-label">INTELLIGENCE</span>
+    </a>
+
+    {% block header_nav %}
+    <nav class="header-nav">
+      <a href="/?tab=all&hours={{ hours|default(24) }}"
+         class="nav-tab {% if tab|default('all') == 'all' %}active{% endif %}">All</a>
+      <a href="/?tab=tech&hours={{ hours|default(24) }}"
+         class="nav-tab tech {% if tab|default('all') == 'tech' %}active tech{% endif %}">Tech</a>
+      <a href="/?tab=world&hours={{ hours|default(24) }}"
+         class="nav-tab world {% if tab|default('all') == 'world' %}active world{% endif %}">World</a>
+      <a href="/?tab=entertainment&hours={{ hours|default(24) }}"
+         class="nav-tab entertainment {% if tab|default('all') == 'entertainment' %}active entertainment{% endif %}">Entertainment</a>
+    </nav>
+    <div class="v-sep"></div>
+    <div class="header-time">
+      <a href="/?tab={{ tab|default('all') }}&hours=6"  class="time-pill {% if hours|default(24)|int == 6  %}active{% endif %}">6h</a>
+      <a href="/?tab={{ tab|default('all') }}&hours=24" class="time-pill {% if hours|default(24)|int == 24 %}active{% endif %}">24h</a>
+      <a href="/?tab={{ tab|default('all') }}&hours=72" class="time-pill {% if hours|default(24)|int == 72 %}active{% endif %}">3d</a>
+    </div>
+    {% endblock %}
+
+    <div class="header-stats" style="margin-left:auto;">
+      {% block header_stats %}
+      <span class="stat-live">
+        <span class="stat-green-dot"></span>
+        <strong>{{ stats.get('today', 0) if stats is defined else '' }}</strong> today
+      </span>
+      <span class="v-sep"></span>
+      <span>Tech <strong>{{ stats.get('tech_today', 0) if stats is defined else '' }}</strong></span>
+      {% if stats is defined and stats.get('last_fetch') %}
+      <span class="v-sep"></span>
+      <span>{{ stats.last_fetch }}</span>
+      {% endif %}
+      {% endblock %}
+    </div>
+
+    <div class="v-sep"></div>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark">
+      <svg class="icon-sun" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/>
+        <line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/>
+        <line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+{% block content %}{% endblock %}
+
+<script>
+/* ── Theme toggle ── */
+function toggleTheme() {
+  const html = document.documentElement;
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  localStorage.setItem('theme', next);
+}
+
+/* ── Scroll reveal ── */
+const _io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); _io.unobserve(e.target); } });
+}, { threshold: 0.06, rootMargin: '0px 0px -32px 0px' });
+document.querySelectorAll('.anim').forEach((el, i) => {
+  el.style.transitionDelay = Math.min(i * 40, 360) + 'ms';
+  _io.observe(el);
+});
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

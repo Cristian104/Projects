@@ -1,0 +1,259 @@
+{% extends "base.html" %}{% block content %}
+<div class="dashboard-content">
+  <div class="welcome-banner">
+    <h1><i class="fas fa-th"></i> Applications</h1>
+    <p>Your personal app launcher.</p>
+  </div>
+
+  <!-- Apps Grid -->
+  <div class="apps-full-grid">
+    {% for app in apps %}
+    <div class="app-full-card {% if not app.is_active %}app-inactive{% endif %}">
+      <a href="{{ app.url }}" target="_blank" class="app-full-link">
+        <div class="app-full-icon" style="background: {{ app.color }}22; color: {{ app.color }}">
+          <i class="{{ app.icon if ' ' in app.icon else 'fas ' + app.icon }}"></i>
+        </div>
+        <div class="app-full-info">
+          <span class="app-full-name">{{ app.name }}</span>
+          {% if app.description %}
+          <span class="app-full-desc">{{ app.description }}</span>
+          {% endif %}
+        </div>
+      </a>
+      {% if current_user.role == 'dev' %}
+      <div class="app-actions">
+        <button class="btn-sm" style="font-size: 0.75rem; padding: 4px 8px;"
+                onclick="openEditModal({{ app.id }}, '{{ app.name|e }}', '{{ app.url|e }}', '{{ app.icon|e }}', '{{ app.color|e }}', '{{ (app.description or '')|e }}', {{ app.order_index }}, {{ 'true' if app.is_active else 'false' }})">
+          <i class="fas fa-pencil-alt"></i>
+        </button>
+        <form action="{{ url_for('dashboard.delete_app', app_id=app.id) }}" method="post" style="display: inline;"
+              onsubmit="return confirm('Delete {{ app.name }}?')">
+          <button class="btn-sm" style="background: #e74c3c; font-size: 0.75rem; padding: 4px 8px;">
+            <i class="fas fa-trash"></i>
+          </button>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+    {% else %}
+    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-gray);">
+      <i class="fas fa-th" style="font-size: 2rem; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+      <p>No apps yet. {% if current_user.role == 'dev' %}Add your first app below.{% endif %}</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if current_user.role == 'dev' %}
+  <!-- Add App Button -->
+  <div style="margin-top: 20px;">
+    <button class="btn-sm" onclick="document.getElementById('add-app-modal').style.display='flex'"
+            style="padding: 10px 20px; font-size: 0.9rem;">
+      <i class="fas fa-plus"></i> Add App
+    </button>
+    <button class="btn-sm" onclick="scanDocker()" id="btn-scan"
+            style="padding: 10px 20px; font-size: 0.9rem; background: #9b59b6; margin-left: 10px;">
+      <i class="fab fa-docker"></i> Scan Docker
+    </button>
+  </div>
+
+  <!-- Docker Scan Results -->
+  <div id="docker-results" style="display: none; margin-top: 15px;">
+    <h4 style="color: var(--text-gray); margin-bottom: 10px;">Running Containers</h4>
+    <div id="docker-list" class="docker-hints-grid"></div>
+  </div>
+
+  <!-- Add App Modal -->
+  <div id="add-app-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: min(480px, calc(100vw - 32px));">
+      <h3><i class="fas fa-plus"></i> Add Application</h3>
+      <form action="{{ url_for('dashboard.add_app') }}" method="post">
+        <label>Name</label>
+        <input type="text" name="name" id="f-name" placeholder="n8n" required />
+        <label>URL</label>
+        <input type="url" name="url" id="f-url" placeholder="http://localhost:5678" required />
+        <label>Icon (FontAwesome class)</label>
+        <input type="text" name="icon" id="f-icon" placeholder="fa-robot" value="fa-globe" />
+        <label>Color</label>
+        <input type="color" name="color" id="f-color" value="#3A7D52" style="width: 60px; height: 36px; padding: 2px;" />
+        <label>Description (optional)</label>
+        <input type="text" name="description" id="f-desc" placeholder="Workflow automation" />
+        <label>Order</label>
+        <input type="number" name="order_index" id="f-order" value="0" min="0" />
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="document.getElementById('add-app-modal').style.display='none'">Cancel</button>
+          <button type="submit" class="btn-save">Add App</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit App Modal -->
+  <div id="edit-app-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-box" style="max-width: min(480px, calc(100vw - 32px));">
+      <h3><i class="fas fa-pencil-alt"></i> Edit Application</h3>
+      <form id="edit-app-form" method="post">
+        <label>Name</label>
+        <input type="text" name="name" id="e-name" required />
+        <label>URL</label>
+        <input type="url" name="url" id="e-url" required />
+        <label>Icon (FontAwesome class)</label>
+        <input type="text" name="icon" id="e-icon" />
+        <label>Color</label>
+        <input type="color" name="color" id="e-color" style="width: 60px; height: 36px; padding: 2px;" />
+        <label>Description</label>
+        <input type="text" name="description" id="e-desc" />
+        <label>Order</label>
+        <input type="number" name="order_index" id="e-order" min="0" />
+        <label>
+          <input type="checkbox" name="is_active" id="e-active" value="true" style="width: auto; margin: 0;" />
+          Active (visible)
+        </label>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="document.getElementById('edit-app-modal').style.display='none'">Cancel</button>
+          <button type="submit" class="btn-save">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+function openEditModal(id, name, url, icon, color, desc, order, isActive) {
+  document.getElementById('e-name').value = name;
+  document.getElementById('e-url').value = url;
+  document.getElementById('e-icon').value = icon;
+  document.getElementById('e-color').value = color;
+  document.getElementById('e-desc').value = desc;
+  document.getElementById('e-order').value = order;
+  document.getElementById('e-active').checked = isActive;
+  document.getElementById('edit-app-form').action = `/apps/update/${id}`;
+  document.getElementById('edit-app-modal').style.display = 'flex';
+}
+
+function scanDocker() {
+  const btn = document.getElementById('btn-scan');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Scanning...';
+  fetch('/api/docker_scan')
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-docker"></i> Scan Docker';
+      if (data.error) {
+        alert('Docker scan error: ' + data.error);
+        return;
+      }
+      const listEl = document.getElementById('docker-list');
+      const resultsEl = document.getElementById('docker-results');
+      if (!data.length) {
+        listEl.innerHTML = '<p style="color: var(--text-gray);">No running containers found.</p>';
+      } else {
+        listEl.innerHTML = data.map(c => `
+          <div class="docker-hint-card" onclick="prefillAdd('${c.name}', '${c.suggested_url}')">
+            <i class="fas fa-cube"></i>
+            <strong>${c.name}</strong>
+            <span style="color:#9b59b6;font-size:0.78rem;">${c.suggested_url.replace('https://','')}</span>
+            ${c.ports.length ? `<span style="color:#555;font-size:0.75rem;">:${c.ports.join(',')}</span>` : ''}
+          </div>
+        `).join('');
+      }
+      resultsEl.style.display = 'block';
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-docker"></i> Scan Docker';
+      alert('Error: ' + err);
+    });
+}
+
+function prefillAdd(name, url) {
+  document.getElementById('f-name').value = name;
+  document.getElementById('f-url').value = url;
+  document.getElementById('add-app-modal').style.display = 'flex';
+}
+</script>
+
+<style>
+.apps-full-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+.app-full-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  transition: border-color 0.2s, background 0.2s;
+}
+.app-full-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); }
+.app-inactive { opacity: 0.4; }
+.app-full-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  text-decoration: none;
+  color: inherit;
+}
+.app-full-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.app-full-info { display: flex; flex-direction: column; }
+.app-full-name { font-weight: 600; font-size: 0.95rem; color: var(--text-primary); }
+.app-full-desc { font-size: 0.8rem; color: var(--text-gray); margin-top: 2px; }
+.app-actions {
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.app-full-card:hover .app-actions { opacity: 1; }
+.docker-hints-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.docker-hint-card {
+  background: rgba(155,89,182,0.15);
+  border: 1px solid rgba(155,89,182,0.3);
+  border-radius: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+.docker-hint-card:hover { background: rgba(155,89,182,0.3); }
+.docker-hint-card i { color: #9b59b6; }
+.docker-hint-card span { color: var(--text-gray); }
+
+@media (max-width: 640px) {
+  .apps-full-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .app-actions { opacity: 1; }
+  .app-full-card { padding: 12px; }
+  .app-full-desc {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+  }
+  .docker-hint-card { flex-wrap: wrap; }
+}
+</style>
+{% endblock %}

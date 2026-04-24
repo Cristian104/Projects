@@ -1,0 +1,112 @@
+{% extends "base.html" %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='nutrition/css/nutrition.css') }}" />
+
+<div class="dashboard-content" style="max-width: 900px; margin: 0 auto">
+  <div class="welcome-banner" style="margin-bottom: 24px">
+    <h1>Nutrition Plans</h1>
+    <p>Upload your coach's PDF to create a plan automatically.</p>
+  </div>
+
+  <div style="display: flex; gap: 12px; margin-bottom: 28px">
+    <button onclick="document.getElementById('upload-modal').classList.add('active')" class="btn-save">
+      <i class="fas fa-file-upload"></i> Import PDF
+    </button>
+  </div>
+
+  <div style="display: grid; gap: 14px">
+    {% for plan in plans %}
+    <div class="card-glass" style="display: flex; justify-content: space-between; align-items: center; border: 1px solid {{ 'var(--accent)' if plan.is_active else 'transparent' }};">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <h3 style="margin: 0">{{ plan.name }}</h3>
+          {% if plan.is_active %}
+          <span class="badge-mini" style="background: var(--accent, #3A7D52); color: white">ACTIVE</span>
+          {% endif %}
+        </div>
+        <p style="color: #888; margin-top: 5px; font-size: 0.83rem">
+          {{ plan.meals|length }} Meals •
+          {{ plan.supplements|length }} Supplements •
+          Created {{ plan.created_at.strftime('%Y-%m-%d') }}
+        </p>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <a href="{{ url_for('nutrition.plan_detail', plan_id=plan.id) }}" class="btn-sm" style="background: rgba(255,255,255,0.07)">
+          <i class="fas fa-eye"></i> View
+        </a>
+        {% if not plan.is_active %}
+        <a href="{{ url_for('nutrition.activate_plan', plan_id=plan.id) }}" class="btn-sm" style="background: rgba(58,125,82,0.15); color: var(--accent)">
+          Activate
+        </a>
+        {% endif %}
+        <form action="{{ url_for('nutrition.delete_plan', plan_id=plan.id) }}" method="POST" style="display:inline"
+              onsubmit="return confirm('Delete plan \'{{ plan.name|e }}\'? This cannot be undone.')">
+          <button type="submit" class="btn-sm" style="background: rgba(231,76,60,0.1); color: #e74c3c">
+            <i class="fas fa-trash"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+    {% else %}
+    <div class="nutr-empty-state">
+      <i class="fas fa-utensils"></i>
+      <p>No plans yet. Upload your coach's PDF to get started.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="modal-overlay">
+  <div class="modal-box">
+    <h3><i class="fas fa-file-upload" style="color: var(--accent)"></i> Import PDF Plan</h3>
+    <form action="{{ url_for('nutrition.upload_pdf') }}" method="POST" enctype="multipart/form-data">
+      <div style="margin-bottom: 14px">
+        <label style="display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 6px">Plan Name</label>
+        <input type="text" name="plan_name" placeholder="e.g. March 2026 — Coach Plan" required class="form-input" />
+      </div>
+      <div style="margin-bottom: 14px">
+        <label style="display: block; font-size: 0.85rem; color: #aaa; margin-bottom: 6px">PDF File</label>
+        <input type="file" name="pdf_file" accept=".pdf" required style="color: #ccc; font-size: 0.85rem;" />
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 18px">
+        <input type="checkbox" id="also-gym" name="also_gym" style="accent-color: var(--accent)" />
+        <label for="also-gym" style="font-size: 0.83rem; color: #aaa; cursor: pointer">Also create gym program from this PDF</label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="document.getElementById('upload-modal').classList.remove('active')">Cancel</button>
+        <button type="submit" id="upload-submit-btn" class="btn-save"><i class="fas fa-magic"></i> Parse & Import</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PDF Loading Overlay -->
+<div id="pdf-loading-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; flex-direction:column; align-items:center; justify-content:center; gap:20px;">
+  <div style="width:52px; height:52px; border:3px solid rgba(58,125,82,0.3); border-top-color:var(--accent,#3A7D52); border-radius:50%; animation:spin 0.9s linear infinite;"></div>
+  <div style="text-align:center">
+    <p style="color:#e8f5e9; font-size:1.05rem; margin:0 0 6px 0; font-weight:600">Parsing PDF with AI...</p>
+    <p style="color:#888; font-size:0.82rem; margin:0">This may take 15–30 seconds</p>
+  </div>
+</div>
+
+<script>
+document.querySelector('form[action="{{ url_for('nutrition.upload_pdf') }}"]').addEventListener('submit', function() {
+  document.getElementById('upload-submit-btn').disabled = true;
+  document.getElementById('pdf-loading-overlay').style.display = 'flex';
+});
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<style>
+@media (max-width: 640px) {
+  .dashboard-content { max-width: 100% !important; }
+  .plans-grid { grid-template-columns: 1fr !important; }
+  .plan-card { padding: 14px; flex-direction: column; align-items: flex-start !important; gap: 12px; }
+  .plan-actions { flex-wrap: wrap; gap: 8px; width: 100%; }
+  .plan-actions .btn-sm { flex: 1; justify-content: center; }
+}
+</style>
+{% endblock %}

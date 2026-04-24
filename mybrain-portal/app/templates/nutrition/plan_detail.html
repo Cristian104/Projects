@@ -1,0 +1,114 @@
+{% extends "base.html" %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='nutrition/css/nutrition.css') }}" />
+
+<div class="dashboard-content" style="max-width: 900px; margin: 0 auto">
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px">
+    <div>
+      <h1 style="margin: 0; font-family: 'JetBrains Mono', monospace;">{{ plan.name }}</h1>
+      <p style="color: #888; margin-top: 6px; font-size: 0.83rem">
+        {{ meals|length }} Meals • {{ supplements|length }} Supplements • Created {{ plan.created_at.strftime('%Y-%m-%d') }}
+        {% if plan.is_active %} • <span style="color: var(--accent)">ACTIVE</span>{% endif %}
+      </p>
+    </div>
+    <div style="display: flex; gap: 10px">
+      {% if not plan.is_active %}
+      <a href="{{ url_for('nutrition.activate_plan', plan_id=plan.id) }}" class="btn-save" style="font-size: 0.85rem">Activate</a>
+      {% endif %}
+      <a href="{{ url_for('nutrition.plans') }}" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+  </div>
+
+  <!-- MEALS -->
+  <h2 class="nutr-section-title"><i class="fas fa-utensils"></i> Meals</h2>
+  {% for meal in meals %}
+  <div class="nutr-meal-card" style="margin-bottom: 16px">
+    <div class="nutr-meal-header">
+      <div>
+        <h3 class="nutr-meal-name">{{ meal.name }}</h3>
+        {% if meal.time_hint %}
+        <span class="nutr-time-hint"><i class="fas fa-clock"></i> {{ meal.time_hint }}</span>
+        {% endif %}
+      </div>
+      <span class="badge-mini" style="background: rgba(255,255,255,0.08); color: #aaa">{{ meal.meal_type }}</span>
+    </div>
+
+    <!-- Regular ingredients -->
+    {% set regular_ings = meal.ingredients | rejectattr('is_protein_swap', 'equalto', True) | list %}
+    {% if regular_ings %}
+    <div class="nutr-ingredients" style="margin-top: 10px">
+      {% for ing in regular_ings %}
+      <span class="nutr-ing-chip">
+        {% if ing.quantity_g %}{{ ing.quantity_g|int }}{{ ing.unit or 'g' }} {% endif %}{{ ing.name }}
+        {% if ing.notes %} <span style="color:#666; font-size:0.8em">({{ ing.notes }})</span>{% endif %}
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Protein swap groups -->
+    {% set swap_groups = {} %}
+    {% for ing in meal.ingredients %}
+      {% if ing.is_protein_swap and ing.swap_group %}
+        {% if ing.swap_group not in swap_groups %}{% set _ = swap_groups.update({ing.swap_group: []}) %}{% endif %}
+        {% set _ = swap_groups[ing.swap_group].append(ing) %}
+      {% endif %}
+    {% endfor %}
+    {% for group, ings in swap_groups.items() %}
+    <div class="nutr-protein-swap-box">
+      <div class="nutr-swap-label"><i class="fas fa-exchange-alt"></i> Protein Options</div>
+      <div class="nutr-swap-options">
+        {% for ing in ings %}
+        <div class="nutr-swap-option">
+          <span class="nutr-swap-name">{{ ing.name }}</span>
+          {% if ing.quantity_g %}
+          <span class="nutr-swap-qty">{{ ing.quantity_g|int }}{{ ing.unit or 'g' }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  <!-- SUPPLEMENTS -->
+  {% if supplements %}
+  <h2 class="nutr-section-title" style="margin-top: 32px"><i class="fas fa-pills"></i> Supplements</h2>
+  {% set timings = ['morning', 'pre-workout', 'post-workout', 'with-meal', 'night'] %}
+  {% set timing_labels = {'morning': 'Morning', 'pre-workout': 'Pre-Workout', 'post-workout': 'Post-Workout', 'with-meal': 'With Meal', 'night': 'Night'} %}
+  {% for timing in timings %}
+    {% set timing_sups = supplements | selectattr('timing', 'equalto', timing) | list %}
+    {% if timing_sups %}
+    <div class="nutr-sup-group" style="margin-bottom: 16px">
+      <div class="nutr-sup-timing-label">{{ timing_labels.get(timing, timing.title()) }}</div>
+      {% for sup in timing_sups %}
+      <div class="nutr-sup-row" style="cursor: default">
+        <div style="width: 20px"></div>
+        <div class="nutr-sup-info">
+          <span class="nutr-sup-name">{{ sup.name }}</span>
+          {% if sup.dose %}<span class="nutr-sup-dose">{{ sup.dose }}</span>{% endif %}
+          {% if sup.notes %}<span style="color:#666; font-size:0.78rem; font-style:italic"> — {{ sup.notes }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+</div>
+
+<style>
+@media (max-width: 640px) {
+  .dashboard-content { max-width: 100% !important; }
+  .dashboard-content > div:first-child { flex-direction: column !important; align-items: flex-start !important; gap: 12px; }
+  .dashboard-content > div:first-child > div:last-child { flex-wrap: wrap; gap: 8px; }
+  .dashboard-content h1 { font-size: 1.1rem !important; }
+  .nutr-meal-card { padding: 14px; }
+  .nutr-meal-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .ingredient-row { flex-wrap: wrap; gap: 6px; }
+  .ingredient-macros { flex-wrap: wrap; }
+  .supplement-row { flex-wrap: wrap; gap: 8px; }
+  .section-header { flex-wrap: wrap; gap: 10px; }
+}
+</style>
+{% endblock %}

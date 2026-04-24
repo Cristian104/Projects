@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  docs:
+    image: squidfunk/mkdocs-material
+    container_name: knowledge
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:8008:8000'
+    volumes:
+      - ./:/docs

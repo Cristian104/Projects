@@ -1,0 +1,462 @@
+{% extends "base.html" %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='nutrition/css/nutrition.css') }}" />
+
+<style>
+  /* ── Nutrition page overrides for new design system ─────────────── */
+  .nutr-section { margin-bottom: 24px; }
+
+  .nutr-section-title {
+    font-family: 'Archivo', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .nutr-section-title i { color: var(--accent); }
+
+  .nutr-progress-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  /* Meal Cards */
+  .nutr-meal-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 18px;
+    margin-bottom: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .nutr-meal-card:hover { border-color: var(--border-medium); }
+
+  .nutr-meal-card.done {
+    opacity: 0.65;
+    border-color: rgba(34,197,94,0.2);
+    background: rgba(34,197,94,0.03);
+  }
+
+  .nutr-meal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+
+  .nutr-meal-name {
+    font-family: 'Archivo', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 2px;
+  }
+
+  .nutr-time-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .nutr-done-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 99px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-input);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .nutr-done-btn:hover {
+    border-color: var(--accent-border);
+    color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .nutr-done-btn.active {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  .nutr-ingredients {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .nutr-ing-chip {
+    background: var(--surface-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 99px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .nutr-swap-chip {
+    border-color: rgba(251,146,60,0.25);
+    color: #FB923C;
+    background: rgba(251,146,60,0.08);
+  }
+
+  .nutr-swap-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .nutr-swap-pill {
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-input);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nutr-swap-pill.selected,
+  .nutr-swap-pill:hover {
+    background: rgba(251,146,60,0.1);
+    border-color: rgba(251,146,60,0.3);
+    color: #FB923C;
+  }
+
+  /* Water */
+  .nutr-water-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    padding: 20px;
+  }
+
+  .nutr-water-display {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .nutr-water-amount {
+    font-family: 'Archivo', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: #60A5FA;
+  }
+
+  .nutr-water-unit {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .nutr-water-bar-wrap {
+    height: 4px;
+    background: var(--border-subtle);
+    border-radius: 2px;
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+
+  .nutr-water-bar {
+    height: 100%;
+    background: #60A5FA;
+    border-radius: 2px;
+    transition: width 0.4s ease;
+    max-width: 100%;
+  }
+
+  .nutr-water-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .nutr-water-btn {
+    background: rgba(96,165,250,0.1);
+    border: 1px solid rgba(96,165,250,0.25);
+    border-radius: 99px;
+    color: #60A5FA;
+    font-size: 0.8rem;
+    font-weight: 600;
+    font-family: 'Space Grotesk', sans-serif;
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .nutr-water-btn:hover {
+    background: rgba(96,165,250,0.18);
+  }
+
+  /* Supplements */
+  .nutr-sup-group {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+
+  .nutr-sup-timing-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 10px 16px 6px;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .nutr-sup-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .nutr-sup-row:last-child { border-bottom: none; }
+
+  .nutr-sup-row:hover { background: var(--surface-2); }
+
+  .nutr-sup-row.done { opacity: 0.55; }
+
+  .nutr-sup-check {
+    font-size: 1rem;
+    flex-shrink: 0;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nutr-sup-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .nutr-sup-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .nutr-sup-dose {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* Empty state */
+  .nutr-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--text-muted);
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--r-lg);
+  }
+
+  .nutr-empty-state i { font-size: 2rem; color: var(--border-medium); }
+
+  .nutr-empty-state p { font-size: 0.9rem; }
+
+  @media (max-width: 640px) {
+    .dashboard-content { max-width: 100% !important; }
+    .nutr-meal-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+    .nutr-water-btns { flex-wrap: wrap; }
+    .nutr-macro-bar { font-size: 0.75rem; }
+    .nutr-meal-card { padding: 14px; }
+    h1[style*="font-size:1.8rem"] { font-size: 1.3rem !important; }
+  }
+</style>
+
+<div class="dashboard-content" style="max-width: 900px; margin: 0 auto">
+
+  <!-- ── Banner ─────────────────────────────────────────────────── -->
+  <div style="width:100%;height:140px;border-radius:var(--r-xl);overflow:hidden;margin-bottom:24px;position:relative;">
+    <img src="{{ url_for('static', filename='global/img/nutrition-banner.png') }}" alt="" style="width:100%;height:100%;object-fit:cover;opacity:0.5;">
+    <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(15,23,42,0.85), transparent);display:flex;align-items:center;padding:24px;">
+      <div>
+        <h1 style="font-family:'Archivo',sans-serif;font-size:1.8rem;font-weight:900;margin:0;">Nutrition <span style="color:var(--accent)">Today</span></h1>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">{{ today.strftime('%A, %B %d') }}{% if plan %} · {{ plan.name }}{% endif %}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Top Action Bar ──────────────────────────────────────────── -->
+  <div style="display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 24px;">
+    {% if plan %}
+    <a href="{{ url_for('nutrition.plan_detail', plan_id=plan.id) }}" class="btn-sm">
+      <i class="fas fa-eye"></i> View Plan
+    </a>
+    {% endif %}
+    <a href="{{ url_for('nutrition.plans') }}" class="btn-sm">
+      <i class="fas fa-list"></i> All Plans
+    </a>
+    <a href="{{ url_for('nutrition.history') }}" class="btn-sm">
+      <i class="fas fa-history"></i> History
+    </a>
+  </div>
+
+  {% if not plan %}
+  <div class="nutr-empty-state">
+    <i class="fas fa-utensils"></i>
+    <p>No active nutrition plan.</p>
+    <a href="{{ url_for('nutrition.plans') }}" class="btn-save">
+      <i class="fas fa-plus"></i> Upload a Plan
+    </a>
+  </div>
+  {% else %}
+
+  <!-- ── MEALS ───────────────────────────────────────────────────── -->
+  <section class="nutr-section">
+    <h2 class="nutr-section-title"><i class="fas fa-utensils"></i> Meals</h2>
+    {% set meals_done = meal_logs.values() | select | selectattr('done', 'equalto', True) | list | length %}
+    <div class="nutr-progress-label">{{ meals_done }} / {{ meals|length }} completed</div>
+
+    {% for meal in meals %}
+    {% set log = meal_logs.get(meal.id) %}
+    {% set is_done = log and log.done %}
+    <div class="nutr-meal-card {{ 'done' if is_done }}" id="meal-card-{{ meal.id }}">
+      <div class="nutr-meal-header">
+        <div>
+          <h3 class="nutr-meal-name">{{ meal.name }}</h3>
+          {% if meal.time_hint %}
+          <span class="nutr-time-hint"><i class="fas fa-clock"></i> {{ meal.time_hint }}</span>
+          {% endif %}
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+          <!-- Protein swap buttons (if applicable) -->
+          {% set swap_groups = {} %}
+          {% for ing in meal.ingredients %}
+            {% if ing.is_protein_swap and ing.swap_group %}
+              {% if ing.swap_group not in swap_groups %}
+                {% set _ = swap_groups.update({ing.swap_group: []}) %}
+              {% endif %}
+              {% set _ = swap_groups[ing.swap_group].append(ing.name) %}
+            {% endif %}
+          {% endfor %}
+          {% for group, options in swap_groups.items() %}
+          <div class="nutr-swap-group">
+            {% for opt in options %}
+            <button class="nutr-swap-pill {{ 'selected' if log and log.variant_chosen == opt }}"
+                    onclick="selectSwap(this, {{ meal.id }}, '{{ opt }}')" data-variant="{{ opt }}">
+              {{ opt }}
+            </button>
+            {% endfor %}
+          </div>
+          {% endfor %}
+
+          <button class="nutr-done-btn {{ 'active' if is_done }}" onclick="toggleMeal({{ meal.id }}, this)">
+            {% if is_done %}<i class="fas fa-check-circle"></i> Done{% else %}<i class="far fa-circle"></i> Mark Done{% endif %}
+          </button>
+        </div>
+      </div>
+
+      <div class="nutr-ingredients">
+        {% for ing in meal.ingredients %}
+          {% if not ing.is_protein_swap %}
+          <span class="nutr-ing-chip">
+            {% if ing.quantity_g %}{{ ing.quantity_g|int }}{{ ing.unit or 'g' }} {% endif %}{{ ing.name }}
+          </span>
+          {% endif %}
+        {% endfor %}
+        {% if swap_groups %}
+        <span class="nutr-ing-chip nutr-swap-chip">
+          <i class="fas fa-exchange-alt" style="font-size:0.7rem;"></i>
+          {% for group, options in swap_groups.items() %}{{ options|join(' / ') }}{% endfor %}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- ── WATER ───────────────────────────────────────────────────── -->
+  <section class="nutr-section">
+    <h2 class="nutr-section-title"><i class="fas fa-tint"></i> Water</h2>
+    <div class="nutr-water-card">
+      <div class="nutr-water-display">
+        <span id="water-amount" class="nutr-water-amount">{{ water_ml }}</span>
+        <span class="nutr-water-unit">/ 3000 ml</span>
+      </div>
+      <div class="nutr-water-bar-wrap">
+        <div class="nutr-water-bar" id="water-bar" style="width: {{ [((water_ml / 3000) * 100)|int, 100]|min }}%"></div>
+      </div>
+      <div class="nutr-water-btns">
+        <button class="nutr-water-btn" onclick="addWater(250)">+250ml</button>
+        <button class="nutr-water-btn" onclick="addWater(500)">+500ml</button>
+        <button class="nutr-water-btn" onclick="addWater(750)">+750ml</button>
+        <button class="nutr-water-btn" onclick="addWater(1000)">+1L</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SUPPLEMENTS ─────────────────────────────────────────────── -->
+  {% if supplements %}
+  <section class="nutr-section">
+    <h2 class="nutr-section-title"><i class="fas fa-pills"></i> Supplements</h2>
+    {% set timings = ['morning', 'pre-workout', 'post-workout', 'with-meal', 'night'] %}
+    {% set timing_labels = {'morning': 'Morning', 'pre-workout': 'Pre-Workout', 'post-workout': 'Post-Workout', 'with-meal': 'With Meal', 'night': 'Night'} %}
+    {% for timing in timings %}
+      {% set timing_sups = supplements | selectattr('timing', 'equalto', timing) | list %}
+      {% if timing_sups %}
+      <div class="nutr-sup-group">
+        <div class="nutr-sup-timing-label">{{ timing_labels.get(timing, timing.title()) }}</div>
+        {% for sup in timing_sups %}
+        {% set slog = supplement_logs.get(sup.id) %}
+        {% set is_done = slog and slog.done %}
+        <div class="nutr-sup-row {{ 'done' if is_done }}" id="sup-row-{{ sup.id }}" onclick="toggleSupplement({{ sup.id }}, this)">
+          <div class="nutr-sup-check">
+            <i class="{{ 'fas fa-check-circle' if is_done else 'far fa-circle' }}" style="color: {{ 'var(--accent)' if is_done else 'var(--border-medium)' }}"></i>
+          </div>
+          <div class="nutr-sup-info">
+            <span class="nutr-sup-name">{{ sup.name }}</span>
+            {% if sup.dose %}<span class="nutr-sup-dose">{{ sup.dose }}</span>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% endif %}
+</div>
+
+<script src="{{ url_for('static', filename='nutrition/js/nutrition.js') }}"></script>
+
+{% endblock %}

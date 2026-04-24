@@ -1,0 +1,23 @@
+/* Minimal — only console log colorization and tab visibility.
+   Everything else is Tailwind inline. */
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Console log level colors */
+.log-success { color: #46f1c5; }
+.log-error   { color: #ffb3b2; }
+.log-warning { color: #f0a500; }
+.log-info    { color: #bacac2; }
+.log-debug   { color: #474746; }
+
+/* Log entry expand toggle */
+.log-detail { display: none; }
+.log-entry-open .log-detail { display: block; }
+.log-entry-open .log-chevron { transform: rotate(180deg); }
+.log-chevron { transition: transform 0.2s; }
+
+/* Scrollbars */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }

@@ -1,0 +1,78 @@
+{% extends "base.html" %} {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='nutrition/css/nutrition.css') }}" />
+
+<div class="dashboard-content" style="max-width: 800px; margin: 0 auto">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 28px; flex-wrap: wrap; gap: 12px">
+    <div>
+      <h1 style="margin: 0; font-size: 1.5rem">Nutrition <span style="color: var(--accent, #3A7D52)">History</span></h1>
+      <p style="color: #888; margin: 4px 0 0 0; font-size: 0.83rem">Your logged meals and water intake</p>
+    </div>
+    <a href="{{ url_for('nutrition.today') }}" class="btn-sm" style="background: rgba(255,255,255,0.05); font-size: 0.82rem">
+      <i class="fas fa-arrow-left"></i> Today
+    </a>
+  </div>
+
+  {% if not days %}
+  <div class="nutr-empty-state">
+    <i class="fas fa-history"></i>
+    <p>No history yet. Start logging your meals today.</p>
+    <a href="{{ url_for('nutrition.today') }}" class="btn-save"><i class="fas fa-utensils"></i> Go to Today</a>
+  </div>
+  {% else %}
+
+  {% for day_date, data in days %}
+  <div style="margin-bottom: 20px">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px">
+      <h3 style="margin: 0; font-size: 0.92rem; color: #aaa; font-family: 'JetBrains Mono', monospace; text-transform: uppercase; letter-spacing: 0.06em">
+        {{ day_date.strftime('%A, %B %d') }}
+      </h3>
+      <div style="display: flex; gap: 14px; align-items: center">
+        {% if data.water_ml %}
+        <span style="font-size: 0.78rem; color: #5ba3e0">
+          <i class="fas fa-tint"></i> {{ data.water_ml }}ml
+        </span>
+        {% endif %}
+        {% if data.meals %}
+        <span style="font-size: 0.78rem; color: var(--accent, #3A7D52)">
+          {{ data.meals | length }} meal{{ 's' if data.meals | length != 1 }}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px">
+      {% for entry in data.meals %}
+      {% set log = entry.log %}
+      {% set meal = entry.meal %}
+      <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px">
+        <i class="fas fa-check-circle" style="color: var(--accent, #3A7D52); font-size: 0.9rem; flex-shrink: 0"></i>
+        <div style="flex: 1">
+          <span style="font-size: 0.88rem; color: #ddd; font-weight: 500">
+            {% if meal %}{{ meal.name }}{% else %}Meal #{{ log.meal_id }}{% endif %}
+          </span>
+          {% if log.variant_chosen %}
+          <span style="font-size: 0.75rem; color: #9b59b6; margin-left: 8px">
+            <i class="fas fa-exchange-alt" style="font-size:0.65rem"></i> {{ log.variant_chosen }}
+          </span>
+          {% endif %}
+        </div>
+        {% if log.completed_at %}
+        <span style="font-size: 0.72rem; color: #555">
+          {{ log.completed_at.strftime('%H:%M') }}
+        </span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+  {% endif %}
+</div>
+
+<style>
+@media (max-width: 768px) {
+  .dashboard-content h3 { font-size: 0.78rem !important; }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}{% block content %}
+<div class="dashboard-content" style="max-width: 720px; margin: 0 auto">
+
+  <div class="welcome-banner" style="margin-bottom: 28px">
+    <h1><i class="fas fa-cog"></i> Settings</h1>
+    <p>Manage your account, preferences, and gym progression.</p>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div style="background: {{ 'rgba(58,125,82,0.15)' if category == 'success' else 'rgba(231,76,60,0.15)' }};
+                border: 1px solid {{ 'rgba(58,125,82,0.4)' if category == 'success' else 'rgba(231,76,60,0.4)' }};
+                border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.88rem;
+                color: {{ 'var(--accent)' if category == 'success' else '#e74c3c' }}">
+      <i class="fas {{ 'fa-check-circle' if category == 'success' else 'fa-exclamation-circle' }}"></i>
+      {{ message }}
+    </div>
+    {% endfor %}
+  {% endwith %}
+
+  <!-- PROFILE -->
+  <div class="settings-card">
+    <div class="settings-card-header"><i class="fas fa-user"></i> Profile</div>
+    <form action="{{ url_for('dashboard.settings_profile') }}" method="POST" class="settings-form">
+      <div class="settings-row">
+        <label>Username</label>
+        <input type="text" name="username" value="{{ current_user.username }}" required />
+      </div>
+      <div class="settings-row">
+        <label>Email</label>
+        <input type="email" name="email" value="{{ current_user.email or '' }}" placeholder="your@email.com" />
+      </div>
+      <div class="settings-actions">
+        <button type="submit" class="btn-save">Save Profile</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- PASSWORD -->
+  <div class="settings-card">
+    <div class="settings-card-header"><i class="fas fa-lock"></i> Change Password</div>
+    <form action="{{ url_for('dashboard.settings_password') }}" method="POST" class="settings-form">
+      <div class="settings-row">
+        <label>Current Password</label>
+        <input type="password" name="current_password" required placeholder="••••••••" />
+      </div>
+      <div class="settings-row">
+        <label>New Password</label>
+        <input type="password" name="new_password" required placeholder="••••••••" minlength="6" />
+      </div>
+      <div class="settings-row">
+        <label>Confirm New Password</label>
+        <input type="password" name="confirm_password" required placeholder="••••••••" />
+      </div>
+      <div class="settings-actions">
+        <button type="submit" class="btn-save">Update Password</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- GYM -->
+  {% if uhm('gym') %}
+  <div class="settings-card">
+    <div class="settings-card-header"><i class="fas fa-dumbbell"></i> Gym</div>
+    <div class="settings-form">
+      <div class="settings-row" style="align-items: flex-start">
+        <label style="padding-top: 10px">Current Day</label>
+        <div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap">
+            {% for d in range(1, 8) %}
+            <form action="{{ url_for('dashboard.settings_gym_day') }}" method="POST" style="margin:0">
+              <input type="hidden" name="day" value="{{ d }}" />
+              <button type="submit" class="day-pill {{ 'active' if current_user.current_gym_day == d }}">
+                Day {{ d }}
+              </button>
+            </form>
+            {% endfor %}
+          </div>
+          <p style="color: #666; font-size: 0.78rem; margin-top: 8px">
+            Currently on <strong style="color: var(--accent)">Day {{ current_user.current_gym_day }}</strong>. Click to jump to any day.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ACCOUNT INFO -->
+  <div class="settings-card">
+    <div class="settings-card-header"><i class="fas fa-info-circle"></i> Account</div>
+    <div class="settings-form">
+      <div class="settings-row">
+        <label>Role</label>
+        <span style="background: {{ 'rgba(155,89,182,0.2)' if current_user.role == 'dev' else 'rgba(255,255,255,0.07)' }}; color: {{ '#9b59b6' if current_user.role == 'dev' else '#aaa' }}; padding: 4px 12px; border-radius: 20px; font-size: 0.82rem">
+          {{ current_user.role | upper }}
+        </span>
+      </div>
+      <div class="settings-row">
+        <label>Active Modules</label>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap">
+          {% for module in ['gym', 'nutrition', 'tasks', 'applications'] %}
+          {% if uhm(module) %}
+          <span style="background: rgba(58,125,82,0.15); color: var(--accent); border: 1px solid rgba(58,125,82,0.3); padding: 3px 10px; border-radius: 20px; font-size: 0.78rem">
+            {{ module | capitalize }}
+          </span>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% if current_user.role == 'dev' %}
+      <div class="settings-actions">
+        <a href="{{ url_for('dashboard.dev_panel') }}" class="btn-save" style="background: rgba(155,89,182,0.2); color: #9b59b6; border: 1px solid rgba(155,89,182,0.3); text-decoration: none">
+          <i class="fas fa-tools"></i> Developer Panel
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<style>
+.settings-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; margin-bottom: 20px; overflow: hidden; }
+.settings-card-header { padding: 14px 20px; font-size: 0.88rem; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; gap: 8px; }
+.settings-card-header i { color: var(--accent, #3A7D52); }
+.settings-form { padding: 8px 0; }
+.settings-row { display: flex; align-items: center; gap: 20px; padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+.settings-row:last-child { border-bottom: none; }
+.settings-row label { min-width: 160px; font-size: 0.86rem; color: #888; flex-shrink: 0; }
+.settings-row input[type="text"], .settings-row input[type="email"], .settings-row input[type="password"] { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: #e8f5e9; font-size: 0.88rem; outline: none; transition: border-color 0.2s; }
+.settings-row input:focus { border-color: var(--accent, #3A7D52); }
+.settings-actions { padding: 14px 20px; display: flex; justify-content: flex-end; border-top: 1px solid rgba(255,255,255,0.04); }
+.day-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 6px 14px; font-size: 0.82rem; color: #888; cursor: pointer; transition: all 0.2s; }
+.day-pill:hover { background: rgba(58,125,82,0.15); color: var(--accent); border-color: rgba(58,125,82,0.4); }
+.day-pill.active { background: rgba(58,125,82,0.2); color: var(--accent); border-color: rgba(58,125,82,0.5); font-weight: 600; }
+@media (max-width: 768px) {
+  .settings-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .settings-row label { min-width: unset; }
+  .settings-row input { width: 100%; box-sizing: border-box; }
+}
+</style>
+{% endblock %}
