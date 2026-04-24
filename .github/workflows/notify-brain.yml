@@ -1,0 +1,35 @@
+name: Notify Brain on merge
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detect changed project
+        id: detect
+        run: |
+          CHANGED=$(git diff HEAD~1 HEAD --name-only 2>/dev/null || git show --name-only --format="" HEAD 2>/dev/null || echo '')
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          # Extract top-level folder name (the project)
+          PROJECT=$(echo "$CHANGED" | grep '/' | head -1 | cut -d/ -f1)
+          echo "project=$PROJECT" >> $GITHUB_OUTPUT
+          echo "Detected project: ${PROJECT:-none}"
+
+      - name: Dispatch sync to Brain
+        if: steps.detect.outputs.project != ''
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.BRAIN_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/Cristian104/Brain/dispatches \
+            -d "{\"event_type\": \"project-updated\", \"client_payload\": {\"project\": \"${{ steps.detect.outputs.project }}\"}}"
+          echo "Dispatched sync for project: ${{ steps.detect.outputs.project }}"
