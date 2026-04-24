@@ -1,0 +1,35 @@
+name: Validate branch name
+
+on:
+  push:
+    branches-ignore: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH="${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}"
+          echo "Branch: $BRANCH"
+
+          if [[ "$BRANCH" == "main" ]]; then
+            exit 0
+          fi
+
+          if [[ ! "$BRANCH" =~ ^feat/[a-zA-Z0-9][a-zA-Z0-9_-]*/[a-zA-Z0-9][a-zA-Z0-9_-]*$ ]]; then
+            echo ""
+            echo "❌ Branch name '$BRANCH' is not allowed."
+            echo ""
+            echo "Required format:  feat/<project>/<description>"
+            echo "Examples:"
+            echo "  feat/morning-brief/update-design"
+            echo "  feat/mybrain-portal/add-gym-chart"
+            echo "  feat/glomeriato/fix-guardian-exit"
+            echo ""
+            exit 1
+          fi
+
+          echo "✅ Branch name is valid."
