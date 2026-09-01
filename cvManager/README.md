@@ -83,3 +83,4 @@ The application will be accessible on host port **`8010`** (`http://localhost:80
 | `GET` | `/api/download-package/{job_id}` | Download ZIP application package (`?lang=pl\|en&include_cv=true`) |
 | `GET` | `/api/export-csv` | Export application history to CSV |
 | `POST` | `/api/generate-blurb` | Custom job description AI evaluation on demand |
+ 
