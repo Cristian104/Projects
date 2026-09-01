@@ -445,3 +445,47 @@ input:focus, textarea:focus {
 .btn-apply:active, .action-btn:active, .tab-btn:active {
   transform: scale(0.96);
 }
+
+
+/* Mobile Responsive Adjustments for Profile Card */
+@media (max-width: 767px) {
+  .profile-card {
+    padding: 14px 16px !important;
+    border-radius: 16px !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .profile-avatar {
+    width: 44px !important;
+    height: 44px !important;
+    font-size: 16px !important;
+  }
+
+  .profile-info h2 {
+    font-size: 16px !important;
+    margin-bottom: 2px !important;
+  }
+
+  #profileHeadline {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    color: #a1a1aa !important;
+    margin-bottom: 8px !important;
+  }
+
+  .profile-pills {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .profile-pills .pill {
+    font-size: 11px !important;
+    padding: 3px 8px !important;
+    border-radius: 6px !important;
+  }
+}
