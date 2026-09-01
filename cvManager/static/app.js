@@ -387,7 +387,7 @@ function toggleTranslatedDesc() {
 }
 
 function copyBlurb() {
-  const text = if(document.getElementById('modalBlurbText')) document.getElementById('modalBlurbText').textContent;
+  const text = document.getElementById('modalBlurbText') ? document.getElementById('modalBlurbText').textContent : '';
   navigator.clipboard.writeText(text).then(() => {
     alert(currentLang === 'en' ? '✅ Cover message copied to clipboard!' : '✅ Treść wiadomości skopiowana do schowka!');
   });
