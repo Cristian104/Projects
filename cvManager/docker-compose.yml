@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  cvmanager:
+    build: .
+    container_name: cvmanager
+    restart: always
+    ports:
+      - "8010:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./ranked_jobs_cache.json:/app/ranked_jobs_cache.json
+      - ./job_tracker_data.json:/app/job_tracker_data.json
+      - ./cached_live_jobs.json:/app/cached_live_jobs.json
+      - ./parsed_profile.json:/app/parsed_profile.json

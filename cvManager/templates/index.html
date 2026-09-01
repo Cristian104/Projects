@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>cvManager | AI Job Matcher & Application Package Builder</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Top Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-icon">CV</div>
+        <div class="logo-text">
+          <h1>cvManager</h1>
+          <p id="headerSubtitle">AI Job Matcher & Application Package Builder</p>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Language Switcher Switch -->
+        <div class="lang-switch-container">
+          <span style="font-size: 13px; font-weight: 600; color: #94a3b8;" id="langLabel">Język / Lang:</span>
+          <div class="filter-tabs" style="padding: 2px;">
+            <button class="tab-btn active" id="langPlBtn" onclick="setLanguage('pl')">🇵🇱 PL</button>
+            <button class="tab-btn" id="langEnBtn" onclick="setLanguage('en')">🇬🇧 EN</button>
+          </div>
+        </div>
+
+        <div class="nav-badges">
+          <div class="badge badge-green">⚡ Gemini 3.6 Flash AI</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- Candidate Profile Overview Card -->
+    <div class="profile-card" id="profileCard">
+      <div class="profile-main">
+        <div class="profile-avatar">KD</div>
+        <div class="profile-info">
+          <h2 id="profileName">Kamila Drewniak</h2>
+          <p id="profileHeadline">Doświadczona specjalistka ds. obsługi klienta (PL/EN C1), rezydentka turystyczna oraz kierownik zespołu.</p>
+          <div class="profile-pills" id="profilePills">
+            <span class="pill">🇬🇧 Angielski (C1)</span>
+            <span class="pill">📍 Częstochowa</span>
+            <span class="pill">🚗 Prawo jazdy kat. B</span>
+            <span class="pill">☕ EBS Barista</span>
+            <span class="pill">💼 KYC / Customer Service</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls & Filter Bar -->
+    <div class="controls-bar" style="flex-wrap: wrap; gap: 16px;">
+      
+      <!-- Application Status Tab Switcher -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 600; color: #94a3b8;" id="statusLabel">Widok:</span>
+        <div class="filter-tabs">
+          <button class="tab-btn active" onclick="setStatusFilter('active', this)" id="btnActiveTab">📋 Oferty (Active)</button>
+          <button class="tab-btn" onclick="setStatusFilter('applied', this)" id="btnAppliedTab">✅ Aplikowane (Applied)</button>
+        </div>
+      </div>
+
+      <!-- Location Scope Switcher -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 600; color: #94a3b8;" id="scopeLabel">Zasięg:</span>
+        <div class="filter-tabs">
+          <button class="tab-btn active" onclick="setScope('all', this)" id="scopeAllBtn">🌐 Wszystkie</button>
+          <button class="tab-btn" onclick="setScope('local', this)" id="scopeLocalBtn">📍 Częstochowa</button>
+          <button class="tab-btn" onclick="setScope('country', this)" id="scopeCountryBtn">🇵🇱 Cała Polska</button>
+        </div>
+      </div>
+
+      <!-- Work Mode Switcher -->
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 600; color: #94a3b8;" id="modeLabel">Tryb:</span>
+        <div class="filter-tabs">
+          <button class="tab-btn active" onclick="setWorkMode('all', this)" id="modeAllBtn">Wszystkie</button>
+          <button class="tab-btn" onclick="setWorkMode('hybrid', this)" id="modeHybridBtn">⚡ Hybrid</button>
+          <button class="tab-btn" onclick="setWorkMode('on-site', this)" id="modeOnsiteBtn">🏢 On-site</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <a href="/api/export-csv" class="action-btn" style="background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3); color: #60a5fa; text-decoration: none;" id="btnExportCsv">
+          <span>📥 Pobierz CSV</span>
+        </a>
+
+        <button class="action-btn" onclick="extendSearch()" id="btnExtendSearch" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399;">
+          <span>🔍 Rozszerz wyszukiwanie</span>
+        </button>
+
+        <button class="action-btn" onclick="openCustomJobModal()" id="btnCustomJob">
+          <span>✨ Analizuj własną ofertę</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Job Cards List -->
+    <div class="job-grid" id="jobGrid">
+      <div style="text-align: center; padding: 40px; color: #94a3b8;">
+        Ładowanie ofert pracy i dopasowania AI...
+      </div>
+    </div>
+
+  </main>
+
+  <!-- AI Application Blurb & ZIP Package Generator Modal -->
+  <div class="modal-backdrop" id="blurbModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalJobTitle">Spersonalizowany Pakiet Aplikacyjny (Application Package)</h3>
+        <button class="close-btn" onclick="closeModal('blurbModal')">&times;</button>
+      </div>
+
+      <!-- AI Salary Estimator Box -->
+      <div id="modalSalaryBox" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+        <h4 style="color: #34d399; font-size: 15px; margin-bottom: 8px;" id="lblSalaryEstimatorHeader">💰 Rynkowy Estymator Wynagrodzenia (AI Salary Estimator):</h4>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 14px; color: #f8fafc; margin-bottom: 8px;">
+          <div><strong id="lblEstRange">Szacowany przedział:</strong> <span id="valEstRange" style="color: #6ee7b7; font-weight: 700;">6,500 - 8,500 PLN brutto</span></div>
+          <div><strong id="lblRecAsk">Rekomendowana stawka (Target):</strong> <span id="valRecAsk" style="color: #38bdf8; font-weight: 700;">7,500 PLN brutto</span></div>
+        </div>
+        <div style="font-size: 13px; color: #cbd5e1; line-height: 1.5;" id="valSalaryTip"></div>
+      </div>
+
+      <!-- Download Package Action Bar -->
+      <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h4 style="color: #60a5fa; font-size: 15px; margin-bottom: 4px;" id="lblDownloadZipHeader">📦 Pobierz Paczkę Aplikacyjną (.ZIP)</h4>
+          <p style="font-size: 12.5px; color: #94a3b8;" id="lblZipDetails">Zawiera: List Motywacyjny (.DOCX + .PDF) oraz CV kandydata (.PDF)</p>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="font-size: 13px; color: #e2e8f0; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <input type="checkbox" id="chkIncludeCv" checked style="accent-color: #10b981; width: 16px; height: 16px;">
+            <span id="lblIncludeCv">Dołącz moje CV PDF</span>
+          </label>
+          
+          <button class="btn-apply" onclick="downloadZipPackage()" id="btnDownloadZip">
+            📦 Pobierz ZIP
+          </button>
+        </div>
+      </div>
+
+      <p style="font-size: 13px; color: #94a3b8; margin-bottom: 12px;" id="modalSubtext">
+        AI przygotowało dedykowaną treść listu/wiadomości gotową do wklejenia w formularzu aplikacyjnym:
+      </p>
+      
+      <div class="blurb-box" id="modalBlurbText"></div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <button class="btn-blurb" onclick="toggleTranslatedDesc()" id="btnToggleDesc">🌐 Zobacz opis po angielsku</button>
+        <button class="btn-blurb" style="background: rgba(16, 185, 129, 0.2); border-color: #10b981; color: #34d399;" onclick="copyBlurb()" id="btnCopyBlurb">📋 Kopiuj treść wiadomości</button>
+      </div>
+
+      <div class="blurb-box" id="modalTranslatedDesc" style="display: none; background: #0b1329; border-color: #3b82f6;"></div>
+
+      <div class="qna-group" id="modalQnaGroup">
+        <h4 style="font-size: 15px; color: #f8fafc; margin-bottom: 12px;" id="modalQnaHeader">💡 Sugerowane odpowiedzi na pytania rekrutera:</h4>
+        <div id="qnaList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Job Analyzer Modal -->
+  <div class="modal-backdrop" id="customJobModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="customModalHeader">Przeanalizuj dowolną ofertę pracy z LinkedIn / Pracuj.pl</h3>
+        <button class="close-btn" onclick="closeModal('customJobModal')">&times;</button>
+      </div>
+
+      <form id="customJobForm" onsubmit="submitCustomJob(event)">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px;" id="lblCustomTitle">Tytuł stanowiska</label>
+          <input type="text" id="customTitle" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: #0f172a; color: white;">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px;" id="lblCustomCompany">Firma</label>
+          <input type="text" id="customCompany" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: #0f172a; color: white;">
+        </div>
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px;" id="lblCustomLocation">Lokalizacja i Tryb</label>
+          <input type="text" id="customLocation" value="Częstochowa (Hybrid)" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: #0f172a; color: white;">
+        </div>
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; color: #94a3b8; margin-bottom: 6px;" id="lblCustomDesc">Treść ogłoszenia (Wymagania i zakres obowiązków)</label>
+          <textarea id="customDesc" rows="6" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background: #0f172a; color: white;"></textarea>
+        </div>
+        <button type="submit" class="btn-apply" style="width: 100%; justify-content: center;" id="btnSubmitCustom">
+          ⚡ Przeanalizuj ofertę i wygeneruj odpowiedź AI
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

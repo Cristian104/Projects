@@ -1,0 +1,107 @@
+{
+  "name": "Kamila Drewniak",
+  "headline": "Doświadczona specjalistka ds. obsługi klienta, rezydentka turystyczna oraz manager zespołu z biegłą znajomością języka angielskiego (C1)",
+  "location": "Częstochowa, Polska",
+  "contact": {
+    "email": "kamila_dre@interia.pl",
+    "phone": "+48 888 788 085"
+  },
+  "work_preferences": {
+    "modes": [
+      "Hybrid",
+      "On-site",
+      "Remote"
+    ],
+    "target_roles": [
+      "Specjalista ds. Obsługi Klienta (Customer Service Specialist)",
+      "Agent ds. Zgodności Prawnej / KYC Specialist",
+      "Rezydent Turystyczny / Pilot Wycieczek",
+      "Manager / Kierownik Sklepu",
+      "Specjalista ds. Relacji z Klientem / Account Specialist"
+    ],
+    "preferred_cities": [
+      "Częstochowa",
+      "Katowice",
+      "Śląsk",
+      "Remote/Hybrid Poland"
+    ]
+  },
+  "summary": "Komunikatywna i dobrze zorganizowana osoba z doświadczeniem w pracy z klientem międzynarodowym, branży turystycznej oraz zarządzaniu zespołem gastronomicznym. Absolwentka Języka Biznesu na Uniwersytecie Opolskim z bardzo dobrą znajomością angielskiego (C1) i podstawami hiszpańskiego oraz rosyjskiego.",
+  "education": [
+    {
+      "institution": "Uniwersytet Opolski",
+      "degree": "Licencjat",
+      "field_of_study": "Język Biznesu (Studia lingwistyczne z elementami zarządzania, marketingu i ekonomii)",
+      "years": "2019 - 2023"
+    }
+  ],
+  "experience": [
+    {
+      "role": "Rezydentka",
+      "company": "Coral Travel - Turcja",
+      "dates": "04/2025 - 11/2025",
+      "responsibilities": [
+        "Prowadzenie transferów i obsługa dyżurów w hotelach",
+        "Sprzedaż wycieczek lokalnych",
+        "Obsługa reklamacji klientów",
+        "Utrzymywanie stałego kontaktu z klientami oraz personelem hotelowym"
+      ]
+    },
+    {
+      "role": "Menadżerka sklepu gastronomicznego",
+      "company": "GCC7 Company - Malta",
+      "dates": "05/2024 - 09/2024",
+      "responsibilities": [
+        "Zarządzanie zespołem pracowników, motywowanie i szkolenie nowych osób",
+        "Tworzenie grafików pracy i zarządzanie czasem pracy pracowników",
+        "Współpraca z dostawcami i negocjowanie warunków dostaw produktów",
+        "Obsługa klientów w języku angielskim"
+      ]
+    },
+    {
+      "role": "Dwujęzyczny agent ds. obsługi klienta w zakresie zgodności prawnych (KYC)",
+      "company": "Bimigmalta Limited - Malta",
+      "dates": "11/2023 - 04/2024",
+      "responsibilities": [
+        "Tłumaczenie dokumentów klientów z języka polskiego na angielski",
+        "Praca z systemem CRM",
+        "Stała korespondencja mailowa oraz telefoniczna z klientami, działem prawnym i działem sprzedaży"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": "Polski",
+      "level": "Native"
+    },
+    {
+      "language": "Angielski",
+      "level": "C1"
+    },
+    {
+      "language": "Rosyjski",
+      "level": "A2"
+    },
+    {
+      "language": "Hiszpański",
+      "level": "A2"
+    }
+  ],
+  "skills": [
+    "Obsługa klienta (Customer Service)",
+    "Zarządzanie zespołem",
+    "Szkolenie i motywowanie pracowników",
+    "Tworzenie grafików pracy",
+    "Procedury KYC i zgodność prawna",
+    "Tłumaczenie dokumentacji (PL-EN)",
+    "Obsługa systemu CRM",
+    "Negocjacje z dostawcami",
+    "Obsługa reklamacji",
+    "Komunikatywność i organizacja pracy",
+    "Praca w środowisku międzynarodowym"
+  ],
+  "certifications": [
+    "Prawo jazdy kat. B",
+    "EBS Barista Course - European Bartender School (02/2026)"
+  ]
+}

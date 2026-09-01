@@ -11,6 +11,7 @@ Source code for all Brain projects. Each folder is an independent deployable ser
 | `portfolio/` | Portfolio site (Next.js) |
 | `morning-brief/` | News pipeline — RSS + AI briefing |
 | `knowledge-base/` | MkDocs knowledge base |
+| `cvManager/` | AI-powered CV manager & job application assistant |
 | `nexus/` | AI CLI session manager (Electron) |
 
 ## Workflow
