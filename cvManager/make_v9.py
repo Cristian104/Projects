@@ -1,4 +1,6 @@
-let currentJobs = [];
+import os
+
+app_code = """let currentJobs = [];
 let currentLang = localStorage.getItem('cvManager_lang') || 'pl';
 let currentScope = 'all';
 let currentWorkMode = 'all';
@@ -8,6 +10,7 @@ let selectedJobIndex = null;
 document.addEventListener('DOMContentLoaded', () => {
   setLanguage(currentLang, false);
   loadProfile();
+  fetchSearchStatus();
   loadJobs();
 });
 
@@ -48,8 +51,10 @@ function setLanguage(lang, reload = true) {
 
   if(document.getElementById('btnCopyBlurb')) document.getElementById('btnCopyBlurb').textContent = isEn ? '📋 Copy Cover Message' : '📋 Kopiuj treść wiadomości';
   if(document.getElementById('btnToggleDesc')) document.getElementById('btnToggleDesc').textContent = isEn ? '🌐 View English Description' : '🌐 Zobacz opis po angielsku';
+  if(document.getElementById('btnGenerateCover')) document.getElementById('btnGenerateCover').textContent = isEn ? '⚡ Generate Cover Letter with AI' : '⚡ Wygeneruj List Motywacyjny z AI';
 
   loadProfile();
+  fetchSearchStatus();
 
   if (reload && currentJobs.length > 0) {
     renderJobs(currentJobs);
@@ -75,6 +80,26 @@ function setWorkMode(mode, btn) {
   document.querySelectorAll('#modeAllBtn, #modeHybridBtn, #modeOnsiteBtn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   loadJobs();
+}
+
+async function fetchSearchStatus() {
+  const badge = document.getElementById('lastSearchBadge');
+  if (!badge) return;
+  const isEn = (currentLang === 'en');
+  try {
+    const res = await fetch('/api/search-status');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.last_searched) {
+      const dt = new Date(data.last_searched);
+      const formatted = dt.toLocaleString(isEn ? 'en-US' : 'pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+      badge.textContent = isEn ? `Last searched: ${formatted}` : `Ostatnie wyszukiwanie: ${formatted}`;
+    } else {
+      badge.textContent = isEn ? 'Last searched: Recently' : 'Ostatnie wyszukiwanie: Niedawno';
+    }
+  } catch (err) {
+    badge.textContent = '';
+  }
 }
 
 async function loadProfile() {
@@ -181,6 +206,8 @@ async function extendSearch() {
       isEn ? `Successfully evaluated ${data.count} job listings` : `Pomyślnie oceniono ${data.count} ofert pracy`
     );
 
+    fetchSearchStatus();
+
     setTimeout(() => {
       loadJobs();
     }, 500);
@@ -216,6 +243,33 @@ async function dismissJob(jobId) {
     loadJobs();
   } catch (err) {
     alert('Error dismissing job: ' + err.message);
+  }
+}
+
+async function verifyJobAvailability(index, btnElem) {
+  const job = currentJobs[index];
+  if (!job) return;
+  const isEn = (currentLang === 'en');
+  if (btnElem) btnElem.textContent = isEn ? '⏳ Verifying...' : '⏳ Sprawdzanie...';
+  
+  try {
+    const res = await fetch(`/api/jobs/${job.id}/verify`);
+    const data = await res.json();
+    if (data.active) {
+      if (btnElem) {
+        btnElem.innerHTML = '✅ Active';
+        btnElem.style.borderColor = 'rgba(52, 211, 153, 0.4)';
+        btnElem.style.color = '#34d399';
+      }
+    } else {
+      if (btnElem) {
+        btnElem.innerHTML = '❌ Expired';
+        btnElem.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        btnElem.style.color = '#f87171';
+      }
+    }
+  } catch (err) {
+    if (btnElem) btnElem.textContent = isEn ? '⚠️ Unavailable' : '⚠️ Niedostępny';
   }
 }
 
@@ -277,8 +331,13 @@ function renderJobs(jobs) {
               ${isApplied ? `<span class="pill pill-applied">APPLIED</span>` : ''}
             </div>
           </div>
-          <div class="score-badge">
-            ⚡ ${score}% Match
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px;">
+            <div class="score-badge">
+              ⚡ ${score}% Match
+            </div>
+            <button class="btn-action-icon" style="font-size: 11px; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #a1a1aa; border-radius: 6px; cursor: pointer;" onclick="verifyJobAvailability(${idx}, this)">
+              🔍 ${isEn ? 'Verify' : 'Sprawdź ważność'}
+            </button>
           </div>
         </div>
 
@@ -339,26 +398,24 @@ async function openBlurbModal(index) {
     document.getElementById('valSalaryTip').innerHTML = `<strong>💡 ${isEn ? 'Negotiation Tip:' : 'Porada Negocjacyjna:'}</strong> ${tipText}`;
   }
 
-  // On-demand fetch full cover letter
   const blurbBox = document.getElementById('modalBlurbText');
-  if (blurbBox) {
-    blurbBox.textContent = isEn ? '⚡ Gemini 3.6 Flash generating full tailored cover letter on demand...' : '⚡ Gemini 3.6 Flash generuje pełny spersonalizowany list motywacyjny...';
+  const btnGen = document.getElementById('btnGenerateCover');
+  
+  // Check if cover letter already exists in cached job object or saved_cover_letters
+  const savedLetters = job.saved_cover_letters || {};
+  if (savedLetters[currentLang]) {
+    if (blurbBox) blurbBox.textContent = savedLetters[currentLang];
+    if (btnGen) btnGen.textContent = isEn ? '⚡ Regenerate Cover Letter' : '⚡ Wygeneruj Ponownie List Motywacyjny';
+  } else if (match.cover_blurb && helperExtractText(match.cover_blurb)) {
+    if (blurbBox) blurbBox.textContent = helperExtractText(match.cover_blurb);
+    if (btnGen) btnGen.textContent = isEn ? '⚡ Generate Full Cover Letter' : '⚡ Wygeneruj Pełny List Motywacyjny';
+  } else {
+    if (blurbBox) blurbBox.textContent = isEn ? 'Click the button below to generate a tailored cover letter with AI.' : 'Kliknij przycisk poniżej, aby wygenerować spersonalizowany list motywacyjny z AI.';
+    if (btnGen) btnGen.textContent = isEn ? '⚡ Generate Cover Letter with AI' : '⚡ Wygeneruj List Motywacyjny z AI';
   }
 
   if (document.getElementById('blurbModal')) {
     document.getElementById('blurbModal').style.display = 'flex';
-  }
-
-  try {
-    const res = await fetch(`/api/jobs/${job.id}/cover-letter?lang=${currentLang}`);
-    if (res.ok) {
-      const data = await res.json();
-      if (blurbBox) blurbBox.textContent = data.cover_letter;
-    } else {
-      if (blurbBox) blurbBox.textContent = helperExtractText(match.cover_blurb) || 'Szanowni Państwo...';
-    }
-  } catch (err) {
-    if (blurbBox) blurbBox.textContent = helperExtractText(match.cover_blurb) || 'Szanowni Państwo...';
   }
 
   const translatedDescBox = document.getElementById('modalTranslatedDesc');
@@ -383,6 +440,36 @@ async function openBlurbModal(index) {
           </div>
         `;
       }).join('');
+    }
+  }
+}
+
+async function generateCoverLetterAction() {
+  if (selectedJobIndex === null || !currentJobs[selectedJobIndex]) return;
+  const job = currentJobs[selectedJobIndex];
+  const isEn = (currentLang === 'en');
+  const blurbBox = document.getElementById('modalBlurbText');
+  const btnGen = document.getElementById('btnGenerateCover');
+
+  if (blurbBox) blurbBox.textContent = isEn ? '⚡ Gemini 3.6 Flash generating full tailored cover letter...' : '⚡ Gemini 3.6 Flash generuje pełny list motywacyjny...';
+  if (btnGen) btnGen.disabled = true;
+
+  try {
+    const res = await fetch(`/api/jobs/${job.id}/cover-letter?lang=${currentLang}&force=true`);
+    if (res.ok) {
+      const data = await res.json();
+      if (blurbBox) blurbBox.textContent = data.cover_letter;
+      if (!job.saved_cover_letters) job.saved_cover_letters = {};
+      job.saved_cover_letters[currentLang] = data.cover_letter;
+    } else {
+      alert(isEn ? 'Error generating cover letter.' : 'Błąd generowania listu motywacyjnego.');
+    }
+  } catch (err) {
+    alert((isEn ? 'Network error: ' : 'Błąd sieci: ') + err.message);
+  } finally {
+    if (btnGen) {
+      btnGen.disabled = false;
+      btnGen.textContent = isEn ? '⚡ Regenerate Cover Letter' : '⚡ Wygeneruj Ponownie List Motywacyjny';
     }
   }
 }
@@ -465,3 +552,9 @@ async function submitCustomJob(e) {
     loadJobs();
   }
 }
+"""
+
+with open('static/app_v9.js', 'w', encoding='utf-8', newline='\n') as f:
+    f.write(app_code)
+
+print("Generated clean app_v9.js!")

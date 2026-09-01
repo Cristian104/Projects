@@ -699,3 +699,39 @@ header {
     font-size: 11px !important;
   }
 }
+
+
+/* Mobile Centering for Control Bars & Filters */
+@media (max-width: 767px) {
+  .controls-bar {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    margin: 0 auto 16px auto !important;
+    gap: 10px !important;
+  }
+
+  .controls-bar > div {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 100% !important;
+  }
+
+  .filter-tabs {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin: 0 auto !important;
+    flex-wrap: wrap !important;
+  }
+
+  #lastSearchBadge {
+    text-align: center !important;
+    display: block !important;
+    width: 100% !important;
+  }
+}
