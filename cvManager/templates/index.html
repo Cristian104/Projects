@@ -10,35 +10,23 @@
 <body>
 
   <!-- Top Header -->
-  <header>
-    <div class="header-container">
-      <div class="logo-group">
-        <div class="logo-icon">CV</div>
-        <div class="logo-text">
-          <h1>cvManager</h1>
-          <p id="headerSubtitle">AI Job Matcher & Application Package Builder</p>
-        </div>
-      </div>
+  <header style="position: fixed; top: 0; width: 100%; z-index: 50; display: flex; justify-content: space-between; align-items: center; padding: 0 24px; height: 64px; background-color: rgba(28, 28, 30, 0.75); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+    <div style="font-size: 24px; font-weight: 700; color: #e5e2e1; letter-spacing: -0.02em;">cvManager</div>
 
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <!-- Language Switcher Switch -->
-        <div class="lang-switch-container">
-          <span style="font-size: 13px; font-weight: 600; color: var(--text-secondary);" id="langLabel">Język / Lang:</span>
-          <div class="filter-tabs" style="padding: 2px;">
-            <button class="tab-btn active" id="langPlBtn" onclick="setLanguage('pl')">🇵🇱 PL</button>
-            <button class="tab-btn" id="langEnBtn" onclick="setLanguage('en')">🇬🇧 EN</button>
-          </div>
-        </div>
-
-        <div class="nav-badges">
-          <div class="badge badge-green">⚡ Gemini 3.6 Flash AI</div>
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <!-- Language Switcher Switch -->
+      <div class="lang-switch-container" style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 13px; font-weight: 600; color: #A1A1AA;" id="langLabel">PL / EN</span>
+        <div class="filter-tabs" style="padding: 2px;">
+          <button class="tab-btn active" id="langPlBtn" onclick="setLanguage('pl')" style="padding: 4px 8px;">PL</button>
+          <button class="tab-btn" id="langEnBtn" onclick="setLanguage('en')" style="padding: 4px 8px;">EN</button>
         </div>
       </div>
     </div>
   </header>
 
   <!-- Main Container -->
-  <main class="container">
+  <main class="container" style="padding-top: 88px; max-width: 1440px; margin: 0 auto; padding-left: 24px; padding-right: 24px;">
     
     <!-- Candidate Profile Overview Card -->
     <div class="profile-card" id="profileCard">

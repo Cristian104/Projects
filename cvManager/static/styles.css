@@ -1,119 +1,49 @@
-/* iOS Professional Minimalist Dark Theme */
-:root {
-  --bg-main: #000000;
-  --bg-card: #1c1c1e;
-  --bg-card-elevated: #2c2c2e;
-  --bg-card-transparent: rgba(28, 28, 30, 0.7);
-  --border-color: rgba(255, 255, 255, 0.08);
-  --text-main: #ffffff;
-  --text-secondary: #ebebf599; /* iOS Secondary Label */
-  --text-tertiary: #ebebf54d;
-  --accent-blue: #0a84ff;
-  --accent-green: #32d74b;
-  --card-radius: 20px;
-  --btn-radius: 12px;
-  --pill-radius: 20px;
-  --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
-  --shadow-md: 0 8px 24px rgba(0,0,0,0.4);
-}
+/* Kinetic Glass Design System - iOS Minimalist Professional */
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-}
+/* Base resets handled by Tailwind, we just bridge app.js classes to Kinetic Glass */
 
 body {
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: #0A0A0A;
+  background-image: radial-gradient(circle at top right, rgba(10, 132, 255, 0.05), transparent 40%),
+                    radial-gradient(circle at bottom left, rgba(48, 209, 88, 0.03), transparent 40%);
   min-height: 100vh;
-  padding-bottom: 80px;
+  color: #e5e2e1;
   overflow-x: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
 }
 
-/* Header */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border-bottom: 0.5px solid var(--border-color);
-  padding: 12px 24px;
+/* Glassmorphism primitives */
+.glass-surface {
+  background-color: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.header-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+/* Map app.js classes to Kinetic Glass */
 
-.logo-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent-blue);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-  color: #fff;
-}
-
-.logo-text h1 {
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
-}
-
-.logo-text p {
-  font-size: 12px;
-  color: var(--text-secondary);
-}
-
-.nav-badges {
-  display: flex;
-  gap: 8px;
-}
-
-.badge {
-  background: rgba(50, 215, 75, 0.15);
-  color: var(--accent-green);
-  padding: 4px 10px;
-  border-radius: var(--pill-radius);
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Main Layout */
-.container {
-  max-width: 1200px;
-  margin: 24px auto;
-  padding: 0 20px;
-}
-
-/* Profile Card */
 .profile-card {
-  background: var(--bg-card);
-  border: 0.5px solid var(--border-color);
-  border-radius: var(--card-radius);
+  background-color: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
   padding: 24px;
   margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .profile-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.profile-main {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -122,28 +52,29 @@ header {
 .profile-avatar {
   width: 64px;
   height: 64px;
-  background: var(--bg-card-elevated);
+  background-color: #2a2a2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--accent-blue);
+  font-size: 24px;
+  font-weight: 700;
+  color: #0A84FF;
   flex-shrink: 0;
 }
 
 .profile-info h2 {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #e5e2e1;
   margin-bottom: 4px;
 }
 
 .profile-info p {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.4;
-  margin-bottom: 12px;
+  color: #c0c6d6;
+  font-size: 15px;
 }
 
 .profile-pills {
@@ -153,189 +84,236 @@ header {
 }
 
 .pill {
-  background: rgba(255, 255, 255, 0.08);
-  padding: 4px 10px;
+  background-color: #2C2C2E;
+  color: #A1A1AA;
+  padding: 6px 12px;
   border-radius: 8px;
-  font-size: 12px;
-  color: var(--text-main);
+  font-size: 13px;
   font-weight: 500;
 }
 
-/* Controls & Filter Bar */
+/* Controls */
 .controls-bar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  flex-direction: column;
   gap: 16px;
-  flex-wrap: wrap;
+  margin-bottom: 24px;
 }
 
-/* iOS Segmented Control Style */
+@media (min-width: 1024px) {
+  .controls-bar {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
 .filter-tabs {
   display: flex;
-  background: rgba(118, 118, 128, 0.24);
-  padding: 2px;
-  border-radius: 8px;
+  background-color: rgba(22, 22, 24, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 12px;
+  gap: 4px;
 }
 
 .tab-btn {
   background: transparent;
   border: none;
-  color: var(--text-secondary);
-  padding: 6px 14px;
-  border-radius: 6px;
+  color: #A1A1AA;
+  padding: 8px 16px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.tab-btn:hover {
+  color: #e5e2e1;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab-btn.active {
-  background: #636366; /* iOS selected segment */
-  color: #fff;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-weight: 600;
 }
 
 .action-btn {
-  background: var(--bg-card);
-  color: var(--accent-blue);
-  border: none;
-  padding: 8px 16px;
-  border-radius: var(--btn-radius);
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e2e1;
+  padding: 10px 20px;
+  border-radius: 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition: opacity 0.2s ease;
+  justify-content: center;
+  gap: 8px;
 }
 
 .action-btn:hover {
-  opacity: 0.8;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Job Cards Grid */
+#btnExtendSearch {
+  background-color: #0A84FF;
+  border-color: #0A84FF;
+  color: white;
+  font-weight: 600;
+}
+#btnExtendSearch:hover {
+  filter: brightness(1.1);
+  background-color: #0A84FF;
+}
+
+/* Job Cards mapped from app.js */
 .job-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .job-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1024px) {
+  .job-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 .job-card {
-  background: var(--bg-card);
-  border-radius: var(--card-radius);
-  padding: 20px;
+  background-color: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  transition: background-color 0.2s ease;
+}
+
+.job-card:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .job-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  margin-bottom: 16px;
 }
 
 .job-title-group h3 {
   font-size: 18px;
   font-weight: 600;
-  color: var(--text-main);
+  line-height: 1.3;
+  color: #e5e2e1;
   margin-bottom: 4px;
 }
 
 .job-meta {
-  display: flex;
-  gap: 10px;
+  color: #c0c6d6;
   font-size: 13px;
-  color: var(--text-secondary);
-  align-items: center;
+  display: flex;
+  gap: 8px;
 }
 
 .score-badge {
-  color: var(--accent-green);
+  background-color: rgba(48, 209, 88, 0.15);
+  color: #30D158;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 700;
-  font-size: 16px;
-  background: rgba(50, 215, 75, 0.1);
-  padding: 4px 10px;
-  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .job-description {
-  font-size: 14px;
-  color: var(--text-secondary);
+  font-size: 15px;
+  color: #A1A1AA;
   line-height: 1.5;
-  background: var(--bg-card-elevated);
-  padding: 12px;
-  border-radius: 12px;
+  margin-bottom: 16px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .job-strengths {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .strength-tag {
-  background: rgba(10, 132, 255, 0.15);
-  color: var(--accent-blue);
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
+  background-color: #2C2C2E;
+  color: #A1A1AA;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
-/* Card Actions */
 .job-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 0.5px solid var(--border-color);
-  margin-top: 4px;
+  gap: 12px;
+  margin-top: auto;
 }
 
 .btn-apply {
-  background: var(--accent-blue);
-  color: white;
-  padding: 10px 16px;
-  border-radius: var(--btn-radius);
-  border: none;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.btn-apply:hover {
-  background: #007aff;
-}
-
-.btn-blurb {
-  background: var(--bg-card-elevated);
-  color: var(--text-main);
-  border: none;
-  padding: 10px 16px;
-  border-radius: var(--btn-radius);
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e2e1;
+  padding: 12px;
+  border-radius: 12px;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
+  flex: 1;
+  text-align: center;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+.btn-apply:hover {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* Modals - Bottom Sheet on Mobile, Centered on Desktop */
+.btn-blurb {
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e2e1;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  transition: all 0.2s;
+}
+.btn-blurb:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Modals */
 .modal-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: none;
   justify-content: center;
   align-items: center;
@@ -343,35 +321,55 @@ header {
 }
 
 .modal-content {
-  background: var(--bg-card);
+  background-color: rgba(28, 28, 30, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px;
   width: 90%;
   max-width: 600px;
   max-height: 85vh;
   overflow-y: auto;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+@media (max-width: 768px) {
+  .modal-backdrop {
+    align-items: flex-end;
+  }
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 24px 20px 40px 20px;
+    animation: slideUp 0.3s ease-out;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .modal-header h3 {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
+  color: #e5e2e1;
 }
 
 .close-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
   border: none;
-  color: var(--text-secondary);
-  width: 30px;
-  height: 30px;
-  border-radius: 15px;
+  color: #A1A1AA;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -380,145 +378,47 @@ header {
 }
 
 .blurb-box {
-  background: var(--bg-card-elevated);
-  border-radius: 12px;
-  padding: 16px;
-  color: var(--text-main);
-  font-size: 14px;
-  line-height: 1.5;
+  background-color: #161618;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 20px;
+  color: #c0c6d6;
+  font-size: 15px;
+  line-height: 1.6;
   white-space: pre-wrap;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 /* Forms */
 input, textarea {
-  background: var(--bg-card-elevated);
-  border: none;
-  color: var(--text-main);
+  background-color: #161618;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #e5e2e1;
   font-family: inherit;
   font-size: 15px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  width: 100%;
 }
 input:focus, textarea:focus {
-  outline: 2px solid var(--accent-blue);
+  outline: none;
+  border-color: #0A84FF;
+  box-shadow: 0 0 0 2px rgba(10, 132, 255, 0.2);
 }
 
-/* Progress */
 .loader-container {
-  padding: 40px;
+  padding: 48px;
   text-align: center;
 }
 .loader-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(255,255,255,0.1);
-  border-top-color: var(--accent-blue);
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255,255,255,0.05);
+  border-top-color: #0A84FF;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 16px auto;
 }
-
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-/* Mobile Responsiveness */
-@media (max-width: 768px) {
-  .header-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 0;
-  }
-  
-  .header-container > div {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .nav-badges {
-    display: none;
-  }
-
-  .profile-card {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 20px 16px;
-  }
-
-  .profile-info h2 {
-    font-size: 18px;
-  }
-
-  .profile-pills {
-    justify-content: center;
-  }
-  
-  .controls-bar {
-    gap: 16px;
-  }
-  
-  .controls-bar > div {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px !important;
-  }
-  
-  .filter-tabs {
-    width: 100%;
-    display: flex;
-  }
-  
-  .tab-btn {
-    flex: 1;
-    text-align: center;
-    padding: 10px;
-  }
-
-  .job-card {
-    padding: 16px;
-  }
-
-  .job-title-group h3 {
-    font-size: 16px;
-  }
-
-  .job-header {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .job-actions {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .btn-apply, .btn-blurb {
-    width: 100%;
-    padding: 12px;
-  }
-
-  .action-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 12px;
-  }
-
-  /* Bottom Sheet for Modals */
-  .modal-backdrop {
-    align-items: flex-end;
-  }
-  .modal-content {
-    width: 100%;
-    border-radius: 24px 24px 0 0;
-    margin: 0;
-    padding: 24px 20px 40px 20px; /* Extra bottom padding for safe area */
-    animation: slideUp 0.3s ease-out;
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
-  }
 }
