@@ -15,39 +15,39 @@ function setLanguage(lang, reload = true) {
   currentLang = lang;
   localStorage.setItem('cvManager_lang', lang);
 
-  document.getElementById('langPlBtn').classList.toggle('active', lang === 'pl');
-  document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
+  if(document.getElementById('langPlBtn')) document.getElementById('langPlBtn').classList.toggle('active', lang === 'pl');
+  if(document.getElementById('langEnBtn')) document.getElementById('langEnBtn').classList.toggle('active', lang === 'en');
 
   const isEn = (lang === 'en');
-  document.getElementById('statusLabel').textContent = isEn ? 'View:' : 'Widok:';
-  document.getElementById('btnActiveTab').textContent = isEn ? '📋 Active Offers' : '📋 Oferty (Active)';
-  document.getElementById('btnAppliedTab').textContent = isEn ? '✅ Applied Jobs' : '✅ Aplikowane (Applied)';
+  if(document.getElementById('statusLabel')) document.getElementById('statusLabel').textContent = isEn ? 'View:' : 'Widok:';
+  if(document.getElementById('btnActiveTab')) document.getElementById('btnActiveTab').textContent = isEn ? '📋 Active Offers' : '📋 Oferty (Active)';
+  if(document.getElementById('btnAppliedTab')) document.getElementById('btnAppliedTab').textContent = isEn ? '✅ Applied Jobs' : '✅ Aplikowane (Applied)';
 
-  document.getElementById('scopeLabel').textContent = isEn ? 'Scope:' : 'Zasięg:';
-  document.getElementById('scopeAllBtn').textContent = isEn ? '🌐 All Locations' : '🌐 Wszystkie';
-  document.getElementById('scopeLocalBtn').textContent = isEn ? '📍 Częstochowa' : '📍 Częstochowa';
-  document.getElementById('scopeCountryBtn').textContent = isEn ? '🇵🇱 All Poland' : '🇵🇱 Cała Polska';
+  if(document.getElementById('scopeLabel')) document.getElementById('scopeLabel').textContent = isEn ? 'Scope:' : 'Zasięg:';
+  if(document.getElementById('scopeAllBtn')) document.getElementById('scopeAllBtn').textContent = isEn ? '🌐 All Locations' : '🌐 Wszystkie';
+  if(document.getElementById('scopeLocalBtn')) document.getElementById('scopeLocalBtn').textContent = isEn ? '📍 Częstochowa' : '📍 Częstochowa';
+  if(document.getElementById('scopeCountryBtn')) document.getElementById('scopeCountryBtn').textContent = isEn ? '🇵🇱 All Poland' : '🇵🇱 Cała Polska';
 
-  document.getElementById('modeLabel').textContent = isEn ? 'Mode:' : 'Tryb:';
-  document.getElementById('modeAllBtn').textContent = isEn ? 'All' : 'Wszystkie';
-  document.getElementById('modeHybridBtn').textContent = isEn ? '⚡ Hybrid' : '⚡ Hybrid';
-  document.getElementById('modeOnsiteBtn').textContent = isEn ? '🏢 On-site' : '🏢 On-site';
+  if(document.getElementById('modeLabel')) document.getElementById('modeLabel').textContent = isEn ? 'Mode:' : 'Tryb:';
+  if(document.getElementById('modeAllBtn')) document.getElementById('modeAllBtn').textContent = isEn ? 'All' : 'Wszystkie';
+  if(document.getElementById('modeHybridBtn')) document.getElementById('modeHybridBtn').textContent = isEn ? '⚡ Hybrid' : '⚡ Hybrid';
+  if(document.getElementById('modeOnsiteBtn')) document.getElementById('modeOnsiteBtn').textContent = isEn ? '🏢 On-site' : '🏢 On-site';
 
-  document.getElementById('btnExportCsv').innerHTML = isEn ? '<span>📥 Export CSV</span>' : '<span>📥 Pobierz CSV</span>';
-  document.getElementById('btnExtendSearch').innerHTML = isEn ? '<span>🔍 Extend Search</span>' : '<span>🔍 Rozszerz wyszukiwanie</span>';
-  document.getElementById('btnCustomJob').innerHTML = isEn ? '<span>✨ Analyze Custom Job</span>' : '<span>✨ Analizuj własną ofertę</span>';
+  if(document.getElementById('btnExportCsv')) document.getElementById('btnExportCsv').innerHTML = isEn ? '<span>📥 Export CSV</span>' : '<span>📥 Pobierz CSV</span>';
+  if(document.getElementById('btnExtendSearch')) document.getElementById('btnExtendSearch').innerHTML = isEn ? '<span>🔍 Extend Search</span>' : '<span>🔍 Rozszerz wyszukiwanie</span>';
+  if(document.getElementById('btnCustomJob')) document.getElementById('btnCustomJob').innerHTML = isEn ? '<span>✨ Analyze Custom Job</span>' : '<span>✨ Analizuj własną ofertę</span>';
 
-  document.getElementById('lblSalaryEstimatorHeader').textContent = isEn ? '💰 AI Salary Range Estimator & Advice:' : '💰 Rynkowy Estymator Wynagrodzenia (AI Salary Estimator):';
-  document.getElementById('lblEstRange').textContent = isEn ? 'Estimated Range:' : 'Szacowany przedział:';
-  document.getElementById('lblRecAsk').textContent = isEn ? 'Recommended Target Ask:' : 'Rekomendowana stawka (Target):';
+  if(document.getElementById('lblSalaryEstimatorHeader')) document.getElementById('lblSalaryEstimatorHeader').textContent = isEn ? '💰 AI Salary Range Estimator & Advice:' : '💰 Rynkowy Estymator Wynagrodzenia (AI Salary Estimator):';
+  if(document.getElementById('lblEstRange')) document.getElementById('lblEstRange').textContent = isEn ? 'Estimated Range:' : 'Szacowany przedział:';
+  if(document.getElementById('lblRecAsk')) document.getElementById('lblRecAsk').textContent = isEn ? 'Recommended Target Ask:' : 'Rekomendowana stawka (Target):';
 
-  document.getElementById('lblDownloadZipHeader').textContent = isEn ? '📦 Download Application Package (.ZIP)' : '📦 Pobierz Paczkę Aplikacyjną (.ZIP)';
-  document.getElementById('lblZipDetails').textContent = isEn ? 'Includes: Cover Letter (.DOCX + .PDF) & Candidate CV (.PDF)' : 'Zawiera: List Motywacyjny (.DOCX + .PDF) oraz CV kandydata (.PDF)';
-  document.getElementById('lblIncludeCv').textContent = isEn ? 'Include Candidate CV PDF' : 'Dołącz moje CV PDF';
-  document.getElementById('btnDownloadZip').textContent = isEn ? '📦 Download ZIP' : '📦 Pobierz ZIP';
+  if(document.getElementById('lblDownloadZipHeader')) document.getElementById('lblDownloadZipHeader').textContent = isEn ? '📦 Download Application Package (.ZIP)' : '📦 Pobierz Paczkę Aplikacyjną (.ZIP)';
+  if(document.getElementById('lblZipDetails')) document.getElementById('lblZipDetails').textContent = isEn ? 'Includes: Cover Letter (.DOCX + .PDF) & Candidate CV (.PDF)' : 'Zawiera: List Motywacyjny (.DOCX + .PDF) oraz CV kandydata (.PDF)';
+  if(document.getElementById('lblIncludeCv')) document.getElementById('lblIncludeCv').textContent = isEn ? 'Include Candidate CV PDF' : 'Dołącz moje CV PDF';
+  if(document.getElementById('btnDownloadZip')) document.getElementById('btnDownloadZip').textContent = isEn ? '📦 Download ZIP' : '📦 Pobierz ZIP';
 
-  document.getElementById('btnCopyBlurb').textContent = isEn ? '📋 Copy Cover Message' : '📋 Kopiuj treść wiadomości';
-  document.getElementById('btnToggleDesc').textContent = isEn ? '🌐 View English Description' : '🌐 Zobacz opis po angielsku';
+  if(document.getElementById('btnCopyBlurb')) document.getElementById('btnCopyBlurb').textContent = isEn ? '📋 Copy Cover Message' : '📋 Kopiuj treść wiadomości';
+  if(document.getElementById('btnToggleDesc')) document.getElementById('btnToggleDesc').textContent = isEn ? '🌐 View English Description' : '🌐 Zobacz opis po angielsku';
 
   if (reload && currentJobs.length > 0) {
     renderJobs(currentJobs);
@@ -81,8 +81,8 @@ async function loadProfile() {
     if (!res.ok) return;
     const profile = await res.json();
 
-    document.getElementById('profileName').textContent = profile.name || 'Kamila Drewniak';
-    document.getElementById('profileHeadline').textContent = profile.headline || '';
+    if(document.getElementById('profileName')) document.getElementById('profileName').textContent = profile.name || 'Kamila Drewniak';
+    if(document.getElementById('profileHeadline')) document.getElementById('profileHeadline').textContent = profile.headline || '';
     
     if (profile.skills) {
       const pillsContainer = document.getElementById('profilePills');
@@ -319,15 +319,15 @@ async function openBlurbModal(index) {
 
   const isEn = (currentLang === 'en');
   const match = job.match || {};
-  document.getElementById('modalJobTitle').textContent = `${job.title} — ${job.company}`;
+  if(document.getElementById('modalJobTitle')) document.getElementById('modalJobTitle').textContent = `${job.title} — ${job.company}`;
 
   // Populate Salary Estimator Box
   const sal = match.salary_estimator || {};
-  document.getElementById('valEstRange').textContent = sal.estimated_range || job.salary || '6,500 - 8,500 PLN brutto';
-  document.getElementById('valRecAsk').textContent = sal.recommended_ask || '7,500 PLN brutto';
+  if(document.getElementById('valEstRange')) document.getElementById('valEstRange').textContent = sal.estimated_range || job.salary || '6,500 - 8,500 PLN brutto';
+  if(document.getElementById('valRecAsk')) document.getElementById('valRecAsk').textContent = sal.recommended_ask || '7,500 PLN brutto';
   
   const tipText = helperExtractText(sal.negotiation_tip) || (isEn ? 'Highlight C1 English proficiency and international customer experience in Malta/Turkey to justify asking for the higher end of the range.' : 'Znakomity angielski C1 oraz wykształcenie lingwistyczne z Języka Biznesu to Twój kluczowy atut podczas negocjacji.');
-  document.getElementById('valSalaryTip').innerHTML = `<strong>💡 ${isEn ? 'Negotiation Tip:' : 'Porada Negocjacyjna:'}</strong> ${tipText}`;
+  if(document.getElementById('valSalaryTip')) document.getElementById('valSalaryTip').innerHTML = `<strong>💡 ${isEn ? 'Negotiation Tip:' : 'Porada Negocjacyjna:'}</strong> ${tipText}`;
 
   // On-demand fetch full cover letter
   const blurbBox = document.getElementById('modalBlurbText');
@@ -387,7 +387,7 @@ function toggleTranslatedDesc() {
 }
 
 function copyBlurb() {
-  const text = document.getElementById('modalBlurbText').textContent;
+  const text = if(document.getElementById('modalBlurbText')) document.getElementById('modalBlurbText').textContent;
   navigator.clipboard.writeText(text).then(() => {
     alert(currentLang === 'en' ? '✅ Cover message copied to clipboard!' : '✅ Treść wiadomości skopiowana do schowka!');
   });
