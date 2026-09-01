@@ -756,3 +756,17 @@ header {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
+
+
+/* 90% Dimming Rules for Expired Cards */
+.job-card.card-expired {
+  opacity: 0.12 !important;
+  filter: grayscale(100%) !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  background: rgba(239, 68, 68, 0.05) !important;
+  transition: opacity 0.3s ease, filter 0.3s ease !important;
+}
+
+.job-card.card-expired:hover {
+  opacity: 0.3 !important;
+}

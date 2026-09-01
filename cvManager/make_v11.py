@@ -1,4 +1,6 @@
-let currentJobs = [];
+import os
+
+app_code = """let currentJobs = [];
 let currentLang = localStorage.getItem('cvManager_lang') || 'pl';
 let currentScope = 'all';
 let currentWorkMode = 'all';
@@ -145,9 +147,11 @@ async function loadJobs() {
     currentJobs = Array.isArray(data) ? data : (data.jobs || []);
     renderJobs(currentJobs);
     
-    // Background verify first 5 jobs
-    currentJobs.slice(0, 5).forEach((j, i) => {
-      if (j.user_status !== 'dismissed') verifyJobAvailability(i);
+    // Automatically verify availability for all loaded jobs in parallel
+    currentJobs.forEach((j, i) => {
+      if (j.user_status !== 'dismissed') {
+        verifyJobAvailability(i);
+      }
     });
   } catch (err) {
     console.error('Failed to load jobs:', err);
@@ -282,32 +286,35 @@ async function verifyJobAvailability(index, btnElem) {
   const job = currentJobs[index];
   if (!job) return;
   const isEn = (currentLang === 'en');
-  if (btnElem) btnElem.textContent = isEn ? '⏳ Verifying...' : '⏳ Sprawdzanie...';
+  const badgeElem = btnElem || document.getElementById(`verify-badge-${job.id}`);
+  const cardElem = document.getElementById(`job-card-${job.id}`);
+
+  if (badgeElem) badgeElem.textContent = isEn ? '⏳ Verifying...' : '⏳ Sprawdzanie...';
   
   try {
     const res = await fetch(`/api/jobs/${job.id}/verify`);
     const data = await res.json();
     job.is_expired = !data.active;
     
-    const cardElem = document.getElementById(`job-card-${job.id}`);
-    
     if (data.active) {
-      if (btnElem) {
-        btnElem.innerHTML = '✅ Active';
-        btnElem.style.borderColor = 'rgba(52, 211, 153, 0.4)';
-        btnElem.style.color = '#34d399';
+      if (badgeElem) {
+        badgeElem.innerHTML = '✅ Active';
+        badgeElem.style.borderColor = 'rgba(52, 211, 153, 0.4)';
+        badgeElem.style.color = '#34d399';
+        badgeElem.style.background = 'rgba(52, 211, 153, 0.1)';
       }
       if (cardElem) cardElem.classList.remove('card-expired');
     } else {
-      if (btnElem) {
-        btnElem.innerHTML = '❌ Expired';
-        btnElem.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-        btnElem.style.color = '#f87171';
+      if (badgeElem) {
+        badgeElem.innerHTML = '❌ Expired';
+        badgeElem.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        badgeElem.style.color = '#f87171';
+        badgeElem.style.background = 'rgba(239, 68, 68, 0.15)';
       }
       if (cardElem) cardElem.classList.add('card-expired');
     }
   } catch (err) {
-    if (btnElem) btnElem.textContent = isEn ? '⚠️ Unavailable' : '⚠️ Niedostępny';
+    if (badgeElem) badgeElem.textContent = isEn ? '⚠️ Unavailable' : '⚠️ Niedostępny';
   }
 }
 
@@ -374,8 +381,8 @@ function renderJobs(jobs) {
             <div class="score-badge">
               ⚡ ${score}% Match
             </div>
-            <button class="btn-action-icon" style="font-size: 11px; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #a1a1aa; border-radius: 6px; cursor: pointer;" onclick="verifyJobAvailability(${idx}, this)">
-              ${isExpired ? '❌ Expired' : `🔍 ${isEn ? 'Verify' : 'Sprawdź ważność'}`}
+            <button id="verify-badge-${job.id}" class="btn-action-icon" style="font-size: 11px; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #a1a1aa; border-radius: 6px; cursor: pointer;" onclick="verifyJobAvailability(${idx}, this)">
+              ⏳ ${isEn ? 'Verifying...' : 'Sprawdzanie...'}
             </button>
           </div>
         </div>
@@ -591,3 +598,9 @@ async function submitCustomJob(e) {
     loadJobs();
   }
 }
+"""
+
+with open('static/app_v11.js', 'w', encoding='utf-8', newline='\n') as f:
+    f.write(app_code)
+
+print("Generated app_v11.js!")
