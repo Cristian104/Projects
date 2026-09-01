@@ -117,7 +117,8 @@ async function loadJobs() {
     const url = `/api/jobs?scope=${currentScope}&work_mode=${currentWorkMode}&status_filter=${currentStatusFilter}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    currentJobs = await res.json();
+    const data = await res.json();
+    currentJobs = Array.isArray(data) ? data : (data.jobs || []);
     renderJobs(currentJobs);
   } catch (err) {
     console.error('Failed to load jobs:', err);
