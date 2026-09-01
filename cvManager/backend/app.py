@@ -122,8 +122,8 @@ def get_ranked_jobs(scope: Optional[str] = "all", work_mode: Optional[str] = "al
 
     annotated_jobs = []
     for j in jobs:
-        st = statuses.get(j["id"], {})
-        user_st = st.get("status", "new")
+        st = statuses.get(j["id"], "new")
+        user_st = st if isinstance(st, str) else (st.get("status", "new") if isinstance(st, dict) else "new")
         
         if status_filter == "applied" and user_st != "applied":
             continue
