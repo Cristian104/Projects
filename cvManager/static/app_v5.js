@@ -254,59 +254,57 @@ function renderJobs(jobs) {
     const match = job.match || {};
     const score = match.match_score || 85;
     
-    let summaryText = helperExtractText(match.summary);
-    if (summaryText.length > 140) summaryText = summaryText.substring(0, 140) + '...';
-    
-    let strengthsArray = helperExtractArray(match.strengths);
-    if (strengthsArray.length > 3) strengthsArray = strengthsArray.slice(0, 3);
+    const summaryText = helperExtractText(match.summary);
+    const strengthsArray = helperExtractArray(match.strengths);
 
     const sal = match.salary_estimator || {};
     const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
 
     const isApplied = (job.user_status === 'applied');
-    const jobUrl = job.url || '#';
+    const jobUrl = job.apply_url || job.url || '#';
+    const sourceTag = job.source || 'LinkedIn';
 
     return `
-      <div class="job-card" style="padding: 20px; background: rgba(28, 28, 30, 0.75); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; flex-wrap: wrap;">
+      <div class="job-card">
+        <div class="job-card-header">
           <div style="flex: 1; min-width: 180px;">
-            <h3 style="font-size: 17px; font-weight: 700; color: #e5e2e1; margin-bottom: 6px; line-height: 1.3;">${job.title}</h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: #A1A1AA;">
-              <span style="display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">business</span> ${job.company}</span>
-              <span style="display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">location_on</span> ${job.location}</span>
+            <h3 class="job-card-title">${job.title}</h3>
+            <div class="job-card-meta">
+              <span>🏢 ${job.company}</span>
+              <span>📍 ${job.location}</span>
               <span style="color: #34d399; font-weight: 600;">💰 ${estRange}</span>
-              ${isApplied ? `<span class="pill" style="background: rgba(16,185,129,0.15); color: #34d399; font-weight: 700; font-size:10px; padding: 2px 6px; border-radius: 4px;">APPLIED</span>` : ''}
+              ${isApplied ? `<span class="pill pill-applied">APPLIED</span>` : ''}
             </div>
           </div>
-          <div class="score-badge" style="flex-shrink: 0; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 13px;">
+          <div class="score-badge">
             ⚡ ${score}% Match
           </div>
         </div>
 
-        <div style="font-size: 13px; color: #34d399; font-weight: 500; margin-bottom: 12px; line-height: 1.4; background: rgba(52, 211, 153, 0.05); padding: 8px 12px; border-radius: 8px; border-left: 3px solid #34d399;">
-          💡 <strong>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'}</strong> ${summaryText}
+        <div class="job-why-matches">
+          💡 <strong>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'}</strong> <span class="summary-text">${summaryText}</span>
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
-          ${strengthsArray.map(s => `<span class="strength-tag" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #d1d5db; font-size: 11px; padding: 3px 8px; border-radius: 6px;"> ${s}</span>`).join('')}
+        <div class="job-strengths-list">
+          ${strengthsArray.map(s => `<span class="strength-tag">✓ ${s}</span>`).join('')}
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; align-items: center;">
-          <button class="btn-apply" onclick="openBlurbModal(${idx})" style="flex: 1; min-width: 140px; padding: 10px 14px; font-size: 13px; border-radius: 10px; background: rgba(10, 132, 255, 0.2); border: 1px solid rgba(10, 132, 255, 0.4); color: #60a5fa; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            📝 ${isEn ? 'AI Cover Package' : 'Paczka AI & Wynagrodzenie'}
+        <div class="job-card-actions">
+          <button class="btn-action-primary" onclick="openBlurbModal(${idx})">
+            📝 <span>${isEn ? 'AI Cover Package' : 'Paczka AI & Wynagrodzenie'}</span>
           </button>
           
-          <a href="${jobUrl}" target="_blank" class="btn-apply" style="padding: 10px 14px; font-size: 13px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #e5e2e1; text-decoration: none; display: flex; align-items: center; gap: 6px;">
-            🚀 ${isEn ? 'Apply on Site' : 'Aplikuj na stronie'}
+          <a href="${jobUrl}" target="_blank" rel="noopener" class="btn-action-secondary">
+            🚀 <span>${isEn ? 'Apply on Site' : 'Aplikuj'}</span>
           </a>
 
           ${!isApplied ? `
-            <button class="btn-apply" style="padding: 10px 12px; border-radius: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; cursor: pointer;" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
+            <button class="btn-action-icon btn-action-check" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
               ✅
             </button>
           ` : ''}
           
-          <button class="btn-apply" style="padding: 10px 12px; border-radius: 10px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; cursor: pointer;" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
+          <button class="btn-action-icon btn-action-dismiss" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
             ❌
           </button>
         </div>
@@ -314,6 +312,7 @@ function renderJobs(jobs) {
     `;
   }).join('');
 }
+
 async function markApplied(jobId) {
   try {
     await fetch(`/api/jobs/${jobId}/status`, {
@@ -378,59 +377,57 @@ function renderJobs(jobs) {
     const match = job.match || {};
     const score = match.match_score || 85;
     
-    let summaryText = helperExtractText(match.summary);
-    if (summaryText.length > 140) summaryText = summaryText.substring(0, 140) + '...';
-    
-    let strengthsArray = helperExtractArray(match.strengths);
-    if (strengthsArray.length > 3) strengthsArray = strengthsArray.slice(0, 3);
+    const summaryText = helperExtractText(match.summary);
+    const strengthsArray = helperExtractArray(match.strengths);
 
     const sal = match.salary_estimator || {};
     const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
 
     const isApplied = (job.user_status === 'applied');
-    const jobUrl = job.url || '#';
+    const jobUrl = job.apply_url || job.url || '#';
+    const sourceTag = job.source || 'LinkedIn';
 
     return `
-      <div class="job-card" style="padding: 20px; background: rgba(28, 28, 30, 0.75); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; flex-wrap: wrap;">
+      <div class="job-card">
+        <div class="job-card-header">
           <div style="flex: 1; min-width: 180px;">
-            <h3 style="font-size: 17px; font-weight: 700; color: #e5e2e1; margin-bottom: 6px; line-height: 1.3;">${job.title}</h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: #A1A1AA;">
-              <span style="display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">business</span> ${job.company}</span>
-              <span style="display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">location_on</span> ${job.location}</span>
+            <h3 class="job-card-title">${job.title}</h3>
+            <div class="job-card-meta">
+              <span>🏢 ${job.company}</span>
+              <span>📍 ${job.location}</span>
               <span style="color: #34d399; font-weight: 600;">💰 ${estRange}</span>
-              ${isApplied ? `<span class="pill" style="background: rgba(16,185,129,0.15); color: #34d399; font-weight: 700; font-size:10px; padding: 2px 6px; border-radius: 4px;">APPLIED</span>` : ''}
+              ${isApplied ? `<span class="pill pill-applied">APPLIED</span>` : ''}
             </div>
           </div>
-          <div class="score-badge" style="flex-shrink: 0; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 13px;">
+          <div class="score-badge">
             ⚡ ${score}% Match
           </div>
         </div>
 
-        <div style="font-size: 13px; color: #34d399; font-weight: 500; margin-bottom: 12px; line-height: 1.4; background: rgba(52, 211, 153, 0.05); padding: 8px 12px; border-radius: 8px; border-left: 3px solid #34d399;">
-          💡 <strong>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'}</strong> ${summaryText}
+        <div class="job-why-matches">
+          💡 <strong>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'}</strong> <span class="summary-text">${summaryText}</span>
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
-          ${strengthsArray.map(s => `<span class="strength-tag" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #d1d5db; font-size: 11px; padding: 3px 8px; border-radius: 6px;"> ${s}</span>`).join('')}
+        <div class="job-strengths-list">
+          ${strengthsArray.map(s => `<span class="strength-tag">✓ ${s}</span>`).join('')}
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; align-items: center;">
-          <button class="btn-apply" onclick="openBlurbModal(${idx})" style="flex: 1; min-width: 140px; padding: 10px 14px; font-size: 13px; border-radius: 10px; background: rgba(10, 132, 255, 0.2); border: 1px solid rgba(10, 132, 255, 0.4); color: #60a5fa; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            📝 ${isEn ? 'AI Cover Package' : 'Paczka AI & Wynagrodzenie'}
+        <div class="job-card-actions">
+          <button class="btn-action-primary" onclick="openBlurbModal(${idx})">
+            📝 <span>${isEn ? 'AI Cover Package' : 'Paczka AI & Wynagrodzenie'}</span>
           </button>
           
-          <a href="${jobUrl}" target="_blank" class="btn-apply" style="padding: 10px 14px; font-size: 13px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #e5e2e1; text-decoration: none; display: flex; align-items: center; gap: 6px;">
-            🚀 ${isEn ? 'Apply on Site' : 'Aplikuj na stronie'}
+          <a href="${jobUrl}" target="_blank" rel="noopener" class="btn-action-secondary">
+            🚀 <span>${isEn ? 'Apply on Site' : 'Aplikuj'}</span>
           </a>
 
           ${!isApplied ? `
-            <button class="btn-apply" style="padding: 10px 12px; border-radius: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; cursor: pointer;" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
+            <button class="btn-action-icon btn-action-check" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
               ✅
             </button>
           ` : ''}
           
-          <button class="btn-apply" style="padding: 10px 12px; border-radius: 10px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; cursor: pointer;" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
+          <button class="btn-action-icon btn-action-dismiss" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
             ❌
           </button>
         </div>
@@ -438,6 +435,7 @@ function renderJobs(jobs) {
     `;
   }).join('');
 }
+
 async function markApplied(jobId) {
   try {
     await fetch(`/api/jobs/${jobId}/status`, {

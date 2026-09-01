@@ -489,3 +489,213 @@ input:focus, textarea:focus {
     border-radius: 6px !important;
   }
 }
+
+
+/* Responsive Glassmorphism Design Enhancements */
+header {
+  box-sizing: border-box !important;
+  max-width: 100vw !important;
+}
+
+.job-card {
+  padding: 20px;
+  background: rgba(28, 28, 30, 0.75);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.job-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.job-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e5e2e1;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.job-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 13px;
+  color: #A1A1AA;
+}
+
+.score-badge {
+  flex-shrink: 0;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #60a5fa;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.job-why-matches {
+  font-size: 13.5px;
+  color: #34d399;
+  font-weight: 500;
+  margin-bottom: 12px;
+  line-height: 1.5;
+  background: rgba(52, 211, 153, 0.05);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border-left: 3px solid #34d399;
+}
+
+.job-strengths-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.strength-tag {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d1d5db;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.job-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 14px;
+  align-items: center;
+}
+
+.btn-action-primary {
+  flex: 1;
+  min-width: 160px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: rgba(10, 132, 255, 0.2);
+  border: 1px solid rgba(10, 132, 255, 0.4);
+  color: #60a5fa;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn-action-secondary {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e5e2e1;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-action-icon {
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-action-check {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+}
+
+.btn-action-dismiss {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
+/* Mobile Specific Optimizations */
+@media (max-width: 767px) {
+  header {
+    padding: 0 12px !important;
+  }
+  
+  #langLabel {
+    display: none !important;
+  }
+
+  #statusLabel, #scopeLabel, #modeLabel {
+    display: none !important;
+  }
+
+  .controls-bar {
+    gap: 8px !important;
+  }
+
+  .filter-tabs {
+    padding: 2px !important;
+  }
+
+  .tab-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+  }
+
+  .action-btn {
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .job-card {
+    padding: 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .job-card-title {
+    font-size: 15px !important;
+  }
+
+  .job-why-matches .summary-text {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+  }
+
+  .job-card-actions {
+    gap: 6px !important;
+  }
+
+  .btn-action-primary {
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+    min-width: 0 !important;
+  }
+
+  .btn-action-secondary {
+    padding: 7px 10px !important;
+    font-size: 11px !important;
+  }
+
+  .btn-action-icon {
+    padding: 7px 9px !important;
+    font-size: 11px !important;
+  }
+}
