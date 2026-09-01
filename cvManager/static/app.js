@@ -235,6 +235,122 @@ function renderJobs(jobs) {
 
   if (!jobs || jobs.length === 0) {
     const emptyText = isEn ? 'No job offers found in this category.' : 'Brak ofert w tej kategorii.';
+    grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #94a3b8; font-weight:500;">${emptyText}</div>`;
+    return;
+  }
+
+  grid.innerHTML = jobs.map((job, idx) => {
+    const match = job.match || {};
+    const score = match.match_score || 85;
+    
+    let summaryText = helperExtractText(match.summary);
+    if (summaryText.length > 180) summaryText = summaryText.substring(0, 180) + '...';
+    
+    let strengthsArray = helperExtractArray(match.strengths);
+    if (strengthsArray.length > 3) strengthsArray = strengthsArray.slice(0, 3);
+
+    const sal = match.salary_estimator || {};
+    const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
+
+    const isApplied = (job.user_status === 'applied');
+
+    return `
+      <div class="job-card" style="padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 12px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 200px;">
+            <h3 style="font-size: 18px; font-weight: 700; color: #e5e2e1; margin-bottom: 8px; line-height: 1.3;">${job.title}</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+              <span style="font-size: 13px; color: #A1A1AA; display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">business</span> ${job.company}</span>
+              <span style="font-size: 13px; color: #A1A1AA; display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">location_on</span> ${job.location}</span>
+              ${isApplied ? `<span class="pill" style="background: rgba(16,185,129,0.15); color: #34d399; font-weight: 700; font-size:11px; padding: 2px 8px;">APPLIED</span>` : ''}
+            </div>
+          </div>
+          <div class="score-badge" style="flex-shrink: 0;">
+            <span class="material-symbols-outlined" style="font-size:16px;">bolt</span> ${score}%
+          </div>
+        </div>
+
+        <div style="font-size: 13px; color: #34d399; font-weight: 500; margin-bottom: 12px; line-height: 1.5;">
+          <span class="material-symbols-outlined" style="font-size:14px; vertical-align: middle; margin-right: 4px;">lightbulb</span>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'} ${summaryText}
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px;">
+          ${strengthsArray.map(s => `<span class="strength-tag">${s}</span>`).join('')}
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;">
+          <button class="btn-apply" onclick="openBlurbModal(${idx})">
+            <span class="material-symbols-outlined" style="font-size:18px;">analytics</span> ${isEn ? 'AI Analysis' : 'Analiza AI'}
+          </button>
+          ${!isApplied ? `
+            <button class="btn-apply" style="flex: 0 0 auto; padding: 12px; border-color: rgba(48,209,88,0.3); color: #30D158;" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
+              <span class="material-symbols-outlined" style="font-size:18px;">check</span>
+            </button>
+          ` : ''}
+          <button class="btn-apply" style="flex: 0 0 auto; padding: 12px; border-color: rgba(239,68,68,0.3); color: #f87171;" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
+            <span class="material-symbols-outlined" style="font-size:18px;">close</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+async function markApplied(jobId) {
+  try {
+    await fetch(`/api/jobs/${jobId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'applied' })
+    });
+    alert(currentLang === 'en' ? '✅ Marked as Applied!' : '✅ Oznaczono jako Aplikowane!');
+    loadJobs();
+  } catch (err) {
+    alert('Error marking applied: ' + err.message);
+  }
+}
+
+async function dismissJob(jobId) {
+  if (!confirm(currentLang === 'en' ? 'Remove this job offer from your list?' : 'Usunąć tę ofertę z listy?')) return;
+  try {
+    await fetch(`/api/jobs/${jobId}/status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'dismissed' })
+    });
+    loadJobs();
+  } catch (err) {
+    alert('Error dismissing job: ' + err.message);
+  }
+}
+
+function helperExtractArray(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'object') {
+    if (Array.isArray(raw[currentLang])) return raw[currentLang];
+    if (Array.isArray(raw.pl)) return raw.pl;
+    if (Array.isArray(raw.en)) return raw.en;
+    return Object.values(raw).filter(x => typeof x === 'string');
+  }
+  if (typeof raw === 'string') return [raw];
+  return [];
+}
+
+function helperExtractText(raw) {
+  if (!raw) return '';
+  if (typeof raw === 'string') return raw;
+  if (typeof raw === 'object') {
+    return raw[currentLang] || raw.pl || raw.en || '';
+  }
+  return String(raw);
+}
+
+function renderJobs(jobs) {
+  const grid = document.getElementById('jobGrid');
+  const isEn = (currentLang === 'en');
+
+  if (!jobs || jobs.length === 0) {
+    const emptyText = isEn ? 'No job offers found in this category.' : 'Brak ofert w tej kategorii.';
     grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #94a3b8;">${emptyText}</div>`;
     return;
   }
