@@ -1,4 +1,6 @@
-let currentJobs = [];
+import os
+
+app_code = """let currentJobs = [];
 let currentLang = localStorage.getItem('cvManager_lang') || 'pl';
 let currentScope = 'all';
 let currentWorkMode = 'all';
@@ -36,6 +38,7 @@ function setLanguage(lang, reload = true) {
 
   if(document.getElementById('btnExportCsv')) document.getElementById('btnExportCsv').innerHTML = isEn ? '<span>📥 Export CSV</span>' : '<span>📥 Pobierz CSV</span>';
   if(document.getElementById('btnExtendSearch')) document.getElementById('btnExtendSearch').innerHTML = isEn ? '<span>🔍 Extend Search</span>' : '<span>🔍 Rozszerz wyszukiwanie</span>';
+  if(document.getElementById('btnClearExpired')) document.getElementById('btnClearExpired').innerHTML = isEn ? '<span>🧹 Clear Expired & Fetch New</span>' : '<span>🧹 Wyczyść wygasłe & Szukaj nowych</span>';
   if(document.getElementById('btnCustomJob')) document.getElementById('btnCustomJob').innerHTML = isEn ? '<span>✨ Analyze Custom Job</span>' : '<span>✨ Analizuj własną ofertę</span>';
 
   if(document.getElementById('lblSalaryEstimatorHeader')) document.getElementById('lblSalaryEstimatorHeader').textContent = isEn ? '💰 AI Salary Range Estimator & Advice:' : '💰 Rynkowy Estymator Wynagrodzenia (AI Salary Estimator):';
@@ -143,6 +146,11 @@ async function loadJobs() {
     const data = await res.json();
     currentJobs = Array.isArray(data) ? data : (data.jobs || []);
     renderJobs(currentJobs);
+    
+    // Background verify first 5 jobs
+    currentJobs.slice(0, 5).forEach((j, i) => {
+      if (j.user_status !== 'dismissed') verifyJobAvailability(i);
+    });
   } catch (err) {
     console.error('Failed to load jobs:', err);
     grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #ef4444;">${isEn ? 'Failed to load jobs.' : 'Błąd ładowania ofert.'}</div>`;
@@ -216,6 +224,34 @@ async function extendSearch() {
   }
 }
 
+async function clearExpiredAndRefresh() {
+  const grid = document.getElementById('jobGrid');
+  const isEn = (currentLang === 'en');
+
+  grid.innerHTML = renderProgressBar(
+    30,
+    isEn ? '🧹 Clearing expired job listings & fetching new active offers...' : '🧹 Usuwanie wygasłych ofert i pobieranie nowych...',
+    isEn ? 'Verifying 404 links & fetching fresh listings' : 'Weryfikacja wygasłych linków i szukanie nowych'
+  );
+
+  try {
+    const res = await fetch('/api/jobs/clear-expired', { method: 'POST' });
+    const data = await res.json();
+    grid.innerHTML = renderProgressBar(
+      100,
+      isEn ? '✅ Cleaned & Updated!' : '✅ Oczyszczono i zaktualizowano!',
+      isEn ? `Removed ${data.dismissed_count} expired listings. ${data.count} active offers available.` : `Usunięto ${data.dismissed_count} wygasłych ofert. Dostępnych ${data.count} aktywnych ofert.`
+    );
+    fetchSearchStatus();
+    setTimeout(() => {
+      loadJobs();
+    }, 600);
+  } catch (err) {
+    alert('Error clearing expired: ' + err.message);
+    loadJobs();
+  }
+}
+
 async function markApplied(jobId) {
   try {
     await fetch(`/api/jobs/${jobId}/status`, {
@@ -253,18 +289,24 @@ async function verifyJobAvailability(index, btnElem) {
   try {
     const res = await fetch(`/api/jobs/${job.id}/verify`);
     const data = await res.json();
+    job.is_expired = !data.active;
+    
+    const cardElem = document.getElementById(`job-card-${job.id}`);
+    
     if (data.active) {
       if (btnElem) {
         btnElem.innerHTML = '✅ Active';
         btnElem.style.borderColor = 'rgba(52, 211, 153, 0.4)';
         btnElem.style.color = '#34d399';
       }
+      if (cardElem) cardElem.classList.remove('card-expired');
     } else {
       if (btnElem) {
         btnElem.innerHTML = '❌ Expired';
         btnElem.style.borderColor = 'rgba(239, 68, 68, 0.4)';
         btnElem.style.color = '#f87171';
       }
+      if (cardElem) cardElem.classList.add('card-expired');
     }
   } catch (err) {
     if (btnElem) btnElem.textContent = isEn ? '⚠️ Unavailable' : '⚠️ Niedostępny';
@@ -314,11 +356,12 @@ function renderJobs(jobs) {
     const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
 
     const isApplied = (job.user_status === 'applied');
+    const isExpired = job.is_expired || false;
     const rawUrl = job.apply_url || job.url || '';
     const jobUrl = (rawUrl && rawUrl !== '#') ? rawUrl : `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(job.title)}`;
 
     return `
-      <div class="job-card">
+      <div class="job-card ${isExpired ? 'card-expired' : ''}" id="job-card-${job.id}">
         <div class="job-card-header">
           <div style="flex: 1; min-width: 180px;">
             <h3 class="job-card-title">${job.title}</h3>
@@ -334,7 +377,7 @@ function renderJobs(jobs) {
               ⚡ ${score}% Match
             </div>
             <button class="btn-action-icon" style="font-size: 11px; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); color: #a1a1aa; border-radius: 6px; cursor: pointer;" onclick="verifyJobAvailability(${idx}, this)">
-              🔍 ${isEn ? 'Verify' : 'Sprawdź ważność'}
+              ${isExpired ? '❌ Expired' : `🔍 ${isEn ? 'Verify' : 'Sprawdź ważność'}`}
             </button>
           </div>
         </div>
@@ -550,3 +593,9 @@ async function submitCustomJob(e) {
     loadJobs();
   }
 }
+"""
+
+with open('static/app_v10.js', 'w', encoding='utf-8', newline='\n') as f:
+    f.write(app_code)
+
+print("Generated clean app_v10.js!")

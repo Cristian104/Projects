@@ -171,6 +171,32 @@ def verify_job_availability(job_id: str):
     except Exception:
         return {"job_id": job_id, "active": False, "status_code": 500}
 
+@app.post("/api/jobs/clear-expired")
+def clear_expired_and_refresh():
+    """Remove all expired jobs and fetch fresh new active jobs."""
+    global CACHED_RANKED_JOBS
+    jobs = load_cached_ranked_jobs()
+    statuses = get_job_statuses()
+    
+    dismissed_count = 0
+    for j in jobs:
+        job_id = j["id"]
+        if statuses.get(job_id) == "dismissed":
+            continue
+        url = j.get("apply_url") or j.get("url")
+        if url and "linkedin.com/jobs/search" not in url and url != "#":
+            try:
+                res = requests.head(url, timeout=3, allow_redirects=True, headers={"User-Agent": "Mozilla/5.0"})
+                if res.status_code >= 400:
+                    set_job_status(job_id, "dismissed", j)
+                    dismissed_count += 1
+            except Exception:
+                set_job_status(job_id, "dismissed", j)
+                dismissed_count += 1
+
+    updated_jobs = refresh_ranked_jobs(force_live_fetch=True)
+    return {"status": "ok", "dismissed_count": dismissed_count, "count": len(updated_jobs), "jobs": updated_jobs}
+
 @app.get("/api/jobs/{job_id}/cover-letter")
 def get_cover_letter(job_id: str, lang: Optional[str] = "pl", force: bool = False):
     """Generate or retrieve stored cover letter from database/cache."""
@@ -188,7 +214,6 @@ def get_cover_letter(job_id: str, lang: Optional[str] = "pl", force: bool = Fals
     profile = get_candidate_profile()
     full_letter = generate_full_cover_letter(target_job, profile, lang=lang)
     
-    # Store in memory & cache file
     if "saved_cover_letters" not in target_job:
         target_job["saved_cover_letters"] = {}
     target_job["saved_cover_letters"][lang] = full_letter
@@ -225,7 +250,6 @@ def download_package(job_id: str, include_cv: bool = True, lang: Optional[str] =
     if not target_job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    # Ensure cover letter exists in cache
     saved = target_job.get("saved_cover_letters", {})
     if lang in saved and saved[lang]:
         cover_letter = saved[lang]

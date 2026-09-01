@@ -735,3 +735,24 @@ header {
     width: 100% !important;
   }
 }
+
+
+/* Expired Card Dimming & Disabling Rules */
+.job-card.card-expired {
+  opacity: 0.5;
+  filter: grayscale(60%);
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: rgba(239, 68, 68, 0.04) !important;
+  transition: all 0.3s ease;
+}
+
+.job-card.card-expired .btn-action-primary,
+.job-card.card-expired .btn-action-secondary {
+  opacity: 0.5;
+  pointer-events: none !important;
+}
+
+.job-card.card-expired .btn-action-dismiss {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}

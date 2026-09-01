@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>cvManager | AI Job Matcher & Application Package Builder</title>
-  <link rel="stylesheet" href="/static/styles_v9.css">
+  <link rel="stylesheet" href="/static/styles_v10.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
 </head>
@@ -90,6 +90,10 @@
           </button>
           <span id="lastSearchBadge" style="font-size: 11px; color: #a1a1aa; font-weight: 500;"></span>
         </div>
+
+        <button class="action-btn" onclick="clearExpiredAndRefresh()" id="btnClearExpired" style="background: rgba(239, 68, 68, 0.15); border: 0.5px solid rgba(239, 68, 68, 0.3); color: #f87171;">
+          <span>🧹 Wyczyść wygasłe & Szukaj nowych</span>
+        </button>
 
         <button class="action-btn" onclick="openCustomJobModal()" id="btnCustomJob">
           <span>✨ Analizuj własną ofertę</span>
@@ -201,6 +205,6 @@
     </div>
   </div>
 
-  <script src="/static/app_v9.js"></script>
+  <script src="/static/app_v10.js"></script>
 </body>
 </html>
