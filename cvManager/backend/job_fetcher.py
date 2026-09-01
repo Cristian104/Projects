@@ -24,7 +24,7 @@ MULTI_SOURCE_SAMPLE_JOBS: List[Dict[str, Any]] = [
         "work_mode": "Hybrid",
         "salary": "5,500 - 7,200 PLN brutto",
         "source": "Pracuj.pl",
-        "apply_url": "https://www.pracuj.pl/praca/customer-service-specialist-czestochowa-x-kom",
+        "apply_url": "https://www.linkedin.com/jobs/search/?keywords=Customer%20Service%20Specialist%20Czestochowa",
         "published": "Dzisiaj",
         "description": """
 Lider branży e-commerce w Polsce poszukuje Specjalisty ds. Obsługi Klienta w centrali w Częstochowie!
@@ -32,26 +32,20 @@ Praca hybrydowa (2 dni biuro w Częstochowie, 3 dni praca z domu).
 
 Zakres obowiązków:
 - Wielokanałowa obsługa klientów (telefon, e-mail, czat)
-- Rozpatrywanie zgłoszeń reklamacyjnych i zapytań dotyczących zamówień
-- Praca w systemach CRM i pakiecie biurowym
+- Rozpatrywanie zgłoszeń reklamacyjnych i zapytań dotyczących zamówień e-commerce
 - Współpraca z działem logistyki i serwisu
-
-Wymagania:
-- Komunikatywność, cierpliwość oraz wysoka kultura osobista
-- Znajomość języka angielskiego (min. B2/C1)
-- Umiejętność sprawnego pisania i pracy pod presją czasu
 """
     },
     {
-        "id": "guess-102",
+        "id": "pracuj-102",
         "title": "Kierownik Sklepu (Store Manager)",
         "company": "Guess Poland - Galeria Jurajska",
         "location": "Częstochowa",
         "scope": "local",
         "work_mode": "On-site",
-        "salary": "7,000 - 9,500 PLN brutto",
+        "salary": "6 000 - 8 500 PLN brutto",
         "source": "Pracuj.pl",
-        "apply_url": "https://www.pracuj.pl/praca/kierownik-sklepu-czestochowa-guess",
+        "apply_url": "https://www.linkedin.com/jobs/search/?keywords=Kierownik%20Sklepu%20Czestochowa",
         "published": "1 dzień temu",
         "description": """
 Międzynarodowa marka modowa Guess poszukuje Kierownika Sklepu w Galerii Jurajskiej w Częstochowie.
@@ -60,24 +54,18 @@ Zakres obowiązków:
 - Zarządzanie zespołem sprzedawców (rekrutacja, szkolenia, motywowanie)
 - Tworzenie grafik czasów pracy i rozliczanie wyników sklepu
 - Dbałość o najwyższe standardy obsługi klienta i visual merchandising
-- Negocjacje i współpraca z centralą firmy
-
-Wymagania:
-- Min. 2 lata doświadczenia w zarządzaniu zespołem w handlu, gastronomi lub turystyce
-- Dobra znajomość języka angielskiego
-- Prawo jazdy kat. B (mile widziane)
 """
     },
     {
-        "id": "fintech-103",
+        "id": "nofluff-101",
         "title": "Junior KYC & AML Operations Analyst",
         "company": "Revolut / FinCrime Europe",
         "location": "Katowice / Częstochowa (Hybrid)",
         "scope": "country",
         "work_mode": "Hybrid",
-        "salary": "7,500 - 10,000 PLN brutto",
+        "salary": "6 500 - 8 500 PLN brutto",
         "source": "NoFluffJobs",
-        "apply_url": "https://nofluffjobs.com/pl/job/junior-kyc-aml-operations-analyst-katowice",
+        "apply_url": "https://www.linkedin.com/jobs/search/?keywords=Junior%20KYC%20AML%20Operations%20Analyst",
         "published": "Dzisiaj",
         "description": """
 Młodszy Analityk ds. Zgodności Prawnej i KYC/AML w międzynarodowej firmie FinTech.
@@ -85,26 +73,20 @@ Oferujemy pracę w trybie hybrydowym z dowolnego miejsca w Polsce (oraz biuro w 
 
 Zakres obowiązków:
 - Analiza i weryfikacja dokumentów tożsamości klientów indywidualnych i biznesowych (KYC)
-- Tłumaczenie dokumentacji klienta (Polski -> Angielski)
-- Korespondencja z działem prawnym, ryzyka i obsługą klienta
-- Praca w wewnętrznych systemach CRM i z bazami danych compliance
-
-Wymagania:
-- Biegły język angielski (min. C1) w mowie i piśmie
-- Studia wyższe (lingwistyka, język biznesu, finanse lub prawo)
-- Bardzo dobra organizacja pracy i skrupulatność
+- Tłumaczenie dokumentacji i raportowanie podejrzanych transakcji (AML)
+- Bezpośrednia współpraca z międzynarodowym zespołem prawnym
 """
     },
     {
-        "id": "jji-104",
+        "id": "justjoin-102",
         "title": "Customer Experience Specialist (PL/EN)",
         "company": "Booksy Polska",
         "location": "Polska (Hybrid / Remote)",
         "scope": "country",
         "work_mode": "Hybrid",
-        "salary": "6,500 - 8,500 PLN brutto",
+        "salary": "6 000 - 8 000 PLN brutto",
         "source": "JustJoin.it",
-        "apply_url": "https://justjoin.it/offers/booksy-customer-experience-specialist",
+        "apply_url": "https://www.linkedin.com/jobs/search/?keywords=Customer%20Experience%20Specialist%20Booksy",
         "published": "2 dni temu",
         "description": """
 Booksy poszukuje Specjalisty ds. Relacji z Klientem w zespole Customer Experience.

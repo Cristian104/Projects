@@ -50,6 +50,7 @@ function setLanguage(lang, reload = true) {
   if(document.getElementById('btnToggleDesc')) document.getElementById('btnToggleDesc').textContent = isEn ? '🌐 View English Description' : '🌐 Zobacz opis po angielsku';
 
   loadProfile();
+
   if (reload && currentJobs.length > 0) {
     renderJobs(currentJobs);
   }
@@ -113,24 +114,28 @@ async function loadJobs() {
   grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #94a3b8;">${isEn ? 'Loading job offers...' : 'Ładowanie ofert pracy...'}</div>`;
 
   try {
-    const res = await fetch(`/api/jobs?scope=${currentScope}&work_mode=${currentWorkMode}&status_filter=${currentStatusFilter}`);
-    const data = await res.json();
-    currentJobs = data.jobs || [];
+    const url = `/api/jobs?scope=${currentScope}&work_mode=${currentWorkMode}&status_filter=${currentStatusFilter}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    currentJobs = await res.json();
     renderJobs(currentJobs);
   } catch (err) {
-    grid.innerHTML = `<div style="text-align: center; color: #ef4444; padding: 40px;">Error: ${err.message}</div>`;
+    console.error('Failed to load jobs:', err);
+    grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #ef4444;">${isEn ? 'Failed to load jobs.' : 'Błąd ładowania ofert.'}</div>`;
   }
 }
 
 function renderProgressBar(percentage, statusText, subText) {
   return `
-    <div class="loader-container">
-      <div class="loader-spinner"></div>
-      <div class="loader-status-text">${statusText} (${percentage}%)</div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" style="width: ${percentage}%;"></div>
+    <div style="padding: 30px; background: rgba(28, 28, 30, 0.75); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; margin: 20px 0;">
+      <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: 600; font-size: 14px; color: #e5e2e1;">
+        <span>${statusText}</span>
+        <span style="color: #60a5fa;">${percentage}%</span>
       </div>
-      <div class="loader-subtext">${subText}</div>
+      <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-bottom: 12px;">
+        <div style="width: ${percentage}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #10b981); transition: width 0.3s ease;"></div>
+      </div>
+      <div style="font-size: 12px; color: #94a3b8;">${subText}</div>
     </div>
   `;
 }
@@ -138,31 +143,26 @@ function renderProgressBar(percentage, statusText, subText) {
 async function extendSearch() {
   const grid = document.getElementById('jobGrid');
   const isEn = (currentLang === 'en');
-
-  let progress = 8;
+  
+  let progress = 15;
   grid.innerHTML = renderProgressBar(
     progress,
-    isEn ? '🔍 Connecting to job search APIs...' : '🔍 Łączenie z API wyszukiwania ofert...',
-    isEn ? 'Searching Częstochowa, Śląsk & Poland hybrid roles' : 'Przeszukiwanie ofert Częstochowa, Śląsk i Polska hybrydowa'
+    isEn ? '🔍 Searching live job listings across Poland...' : '🔍 Przeszukiwanie najnowszych ofert pracy w Polsce...',
+    isEn ? 'Fetching LinkedIn, Pracuj.pl, NoFluffJobs & JustJoin.it' : 'Pobieranie z LinkedIn, Pracuj.pl, NoFluffJobs i JustJoin.it'
   );
 
   const progressInterval = setInterval(() => {
-    if (progress < 96) {
-      progress += Math.floor(Math.random() * 5) + 3;
-      if (progress > 96) progress = 96;
+    if (progress < 90) {
+      progress += Math.floor(Math.random() * 12) + 5;
+      let msg = isEn ? '🔍 Fetching live listings...' : '🔍 Pobieranie najnowszych ofert...';
+      let sub = isEn ? 'Scanning Frequent keywords...' : 'Skanowanie słów kluczowych...';
 
-      let msg = isEn ? '🔍 Scraping live job listings...' : '🔍 Pobieranie świeżych ofert z sieci...';
-      let sub = isEn ? 'Processing active job postings in Częstochowa & Poland' : 'Przetwarzanie aktywnych ogłoszeń w Częstochowie i Polsce';
-
-      if (progress > 25 && progress <= 55) {
-        msg = isEn ? '🤖 Evaluating candidate match scores with Gemini 3.6 Flash AI...' : '🤖 Ocena dopasowania kandydata z Gemini 3.6 Flash AI...';
+      if (progress > 30 && progress <= 60) {
+        msg = isEn ? '⚡ Evaluating candidate match scores with Gemini 3.6 Flash AI...' : '⚡ Ocena dopasowania kandydata z Gemini 3.6 Flash AI...';
         sub = isEn ? 'Comparing C1 Business English & Malta/Turkey experience' : 'Porównywanie języka C1 i doświadczenia z Malty i Turcji';
-      } else if (progress > 55 && progress <= 85) {
+      } else if (progress > 60) {
         msg = isEn ? '💰 Estimating market salary ranges for Poland...' : '💰 Szacowanie rynkowych widełek wynagrodzeń...';
         sub = isEn ? 'Calculating target asks and negotiation advice' : 'Wyliczanie stawek dla Częstochowy i Polski';
-      } else if (progress > 85) {
-        msg = isEn ? '⚡ Indexing active jobs...' : '⚡ Indeksowanie aktywnych ofert...';
-        sub = isEn ? 'Cover letters will be generated on demand when requested' : 'Listy motywacyjne generowane są na życzenie';
       }
 
       grid.innerHTML = renderProgressBar(progress, msg, sub);
@@ -176,7 +176,7 @@ async function extendSearch() {
     clearInterval(progressInterval);
     grid.innerHTML = renderProgressBar(
       100,
-      isEn ? '✨ Done! Fresh active listings updated!' : '✨ Gotowe! Zaktualizowano aktywne oferty!',
+      isEn ? '✅ Done! Fresh active listings updated!' : '✅ Gotowe! Zaktualizowano aktywne oferty!',
       isEn ? `Successfully evaluated ${data.count} job listings` : `Pomyślnie oceniono ${data.count} ofert pracy`
     );
 
@@ -261,8 +261,8 @@ function renderJobs(jobs) {
     const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
 
     const isApplied = (job.user_status === 'applied');
-    const jobUrl = job.apply_url || job.url || '#';
-    const sourceTag = job.source || 'LinkedIn';
+    const rawUrl = job.apply_url || job.url || '';
+    const jobUrl = (rawUrl && rawUrl !== '#') ? rawUrl : `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(job.title)}`;
 
     return `
       <div class="job-card">
@@ -313,250 +313,154 @@ function renderJobs(jobs) {
   }).join('');
 }
 
-async function markApplied(jobId) {
+async function openBlurbModal(index) {
+  selectedJobIndex = index;
+  const job = currentJobs[index];
+  if (!job) return;
+
+  const isEn = (currentLang === 'en');
+  const match = job.match || {};
+  if (document.getElementById('modalJobTitle')) {
+    document.getElementById('modalJobTitle').textContent = `${job.title} — ${job.company}`;
+  }
+
+  // Populate Salary Estimator Box
+  const sal = match.salary_estimator || {};
+  if (document.getElementById('valEstRange')) {
+    document.getElementById('valEstRange').textContent = sal.estimated_range || job.salary || '6,500 - 8,500 PLN brutto';
+  }
+  if (document.getElementById('valRecAsk')) {
+    document.getElementById('valRecAsk').textContent = sal.recommended_ask || '7,500 PLN brutto';
+  }
+  
+  const tipText = helperExtractText(sal.negotiation_tip) || (isEn ? 'Highlight C1 English proficiency and international customer experience in Malta/Turkey to justify asking for the higher end of the range.' : 'Znakomity angielski C1 oraz wykształcenie lingwistyczne z Języka Biznesu to Twój kluczowy atut podczas negocjacji.');
+  if (document.getElementById('valSalaryTip')) {
+    document.getElementById('valSalaryTip').innerHTML = `<strong>💡 ${isEn ? 'Negotiation Tip:' : 'Porada Negocjacyjna:'}</strong> ${tipText}`;
+  }
+
+  // On-demand fetch full cover letter
+  const blurbBox = document.getElementById('modalBlurbText');
+  if (blurbBox) {
+    blurbBox.textContent = isEn ? '⚡ Gemini 3.6 Flash generating full tailored cover letter on demand...' : '⚡ Gemini 3.6 Flash generuje pełny spersonalizowany list motywacyjny...';
+  }
+
+  if (document.getElementById('blurbModal')) {
+    document.getElementById('blurbModal').style.display = 'flex';
+  }
+
   try {
-    await fetch(`/api/jobs/${jobId}/status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'applied' })
-    });
-    alert(currentLang === 'en' ? '✅ Marked as Applied!' : '✅ Oznaczono jako Aplikowane!');
-    loadJobs();
+    const res = await fetch(`/api/jobs/${job.id}/cover-letter?lang=${currentLang}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (blurbBox) blurbBox.textContent = data.cover_letter;
+    } else {
+      if (blurbBox) blurbBox.textContent = helperExtractText(match.cover_blurb) || 'Szanowni Państwo...';
+    }
   } catch (err) {
-    alert('Error marking applied: ' + err.message);
+    if (blurbBox) blurbBox.textContent = helperExtractText(match.cover_blurb) || 'Szanowni Państwo...';
+  }
+
+  const translatedDescBox = document.getElementById('modalTranslatedDesc');
+  if (translatedDescBox) {
+    translatedDescBox.style.display = 'none';
+    translatedDescBox.textContent = match.description_en || job.description;
+  }
+
+  const qnaList = document.getElementById('qnaList');
+  if (qnaList) {
+    const qna = match.screening_qna || [];
+    if (!Array.isArray(qna) || qna.length === 0) {
+      qnaList.innerHTML = `<div style="color: #94a3b8; font-size: 13px;">${isEn ? 'No extra recruiter questions.' : 'Brak dodatkowych pytań rekrutera.'}</div>`;
+    } else {
+      qnaList.innerHTML = qna.map(item => {
+        const q = isEn ? (item.question_en || item.question_pl || item.question) : (item.question_pl || item.question);
+        const a = isEn ? (item.answer_en || item.answer_pl || item.answer) : (item.answer_pl || item.answer);
+        return `
+          <div class="qna-item" style="margin-bottom: 12px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px;">
+            <div class="qna-q" style="font-weight: 600; color: #60a5fa; margin-bottom: 4px;">Q: ${q}</div>
+            <div class="qna-a" style="color: #e5e2e1; font-size: 13px;">A: ${a}</div>
+          </div>
+        `;
+      }).join('');
+    }
   }
 }
 
-async function dismissJob(jobId) {
-  if (!confirm(currentLang === 'en' ? 'Remove this job offer from your list?' : 'Usunąć tę ofertę z listy?')) return;
-  try {
-    await fetch(`/api/jobs/${jobId}/status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'dismissed' })
-    });
-    loadJobs();
-  } catch (err) {
-    alert('Error dismissing job: ' + err.message);
+function downloadZipPackage() {
+  if (selectedJobIndex === null || !currentJobs[selectedJobIndex]) return;
+  const job = currentJobs[selectedJobIndex];
+  const chk = document.getElementById('chkIncludeCv');
+  const includeCv = chk ? chk.checked : true;
+  window.location.href = `/api/download-package/${job.id}?include_cv=${includeCv}&lang=${currentLang}`;
+}
+
+function toggleTranslatedDesc() {
+  const descBox = document.getElementById('modalTranslatedDesc');
+  if (descBox) {
+    descBox.style.display = (descBox.style.display === 'none') ? 'block' : 'none';
   }
 }
 
-function helperExtractArray(raw) {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-  if (typeof raw === 'object') {
-    if (Array.isArray(raw[currentLang])) return raw[currentLang];
-    if (Array.isArray(raw.pl)) return raw.pl;
-    if (Array.isArray(raw.en)) return raw.en;
-    return Object.values(raw).filter(x => typeof x === 'string');
-  }
-  if (typeof raw === 'string') return [raw];
-  return [];
+function copyBlurb() {
+  const elem = document.getElementById('modalBlurbText');
+  const text = elem ? elem.textContent : '';
+  navigator.clipboard.writeText(text).then(() => {
+    alert(currentLang === 'en' ? '✅ Cover message copied to clipboard!' : '✅ Treść wiadomości skopiowana do schowka!');
+  });
 }
 
-function helperExtractText(raw) {
-  if (!raw) return '';
-  if (typeof raw === 'string') return raw;
-  if (typeof raw === 'object') {
-    return raw[currentLang] || raw.pl || raw.en || '';
-  }
-  return String(raw);
+function closeModal(modalId) {
+  const m = document.getElementById(modalId);
+  if (m) m.style.display = 'none';
 }
 
-function renderJobs(jobs) {
+function openCustomJobModal() {
+  const m = document.getElementById('customJobModal');
+  if (m) m.style.display = 'flex';
+}
+
+async function submitCustomJob(e) {
+  e.preventDefault();
+  const title = document.getElementById('customTitle').value;
+  const company = document.getElementById('customCompany').value;
+  const location = document.getElementById('customLocation').value;
+  const description = document.getElementById('customDesc').value;
+
+  closeModal('customJobModal');
   const grid = document.getElementById('jobGrid');
   const isEn = (currentLang === 'en');
+  
+  grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #94a3b8;">${isEn ? '⚡ Gemini 3.6 Flash analyzing custom job offer...' : '⚡ Gemini 3.6 Flash analizuje ogłoszenie...'}</div>`;
 
-  if (!jobs || jobs.length === 0) {
-    const emptyText = isEn ? 'No job offers found in this category.' : 'Brak ofert w tej kategorii.';
-    grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #94a3b8; font-weight:500;">${emptyText}</div>`;
-    return;
-  }
-
-  grid.innerHTML = jobs.map((job, idx) => {
-    const match = job.match || {};
-    const score = match.match_score || 85;
-    
-    const summaryText = helperExtractText(match.summary);
-    const strengthsArray = helperExtractArray(match.strengths);
-
-    const sal = match.salary_estimator || {};
-    const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
-
-    const isApplied = (job.user_status === 'applied');
-    const jobUrl = job.apply_url || job.url || '#';
-    const sourceTag = job.source || 'LinkedIn';
-
-    return `
-      <div class="job-card">
-        <div class="job-card-header">
-          <div style="flex: 1; min-width: 180px;">
-            <h3 class="job-card-title">${job.title}</h3>
-            <div class="job-card-meta">
-              <span>🏢 ${job.company}</span>
-              <span>📍 ${job.location}</span>
-              <span style="color: #34d399; font-weight: 600;">💰 ${estRange}</span>
-              ${isApplied ? `<span class="pill pill-applied">APPLIED</span>` : ''}
-            </div>
-          </div>
-          <div class="score-badge">
-            ⚡ ${score}% Match
-          </div>
-        </div>
-
-        <div class="job-why-matches">
-          💡 <strong>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'}</strong> <span class="summary-text">${summaryText}</span>
-        </div>
-
-        <div class="job-strengths-list">
-          ${strengthsArray.map(s => `<span class="strength-tag">✓ ${s}</span>`).join('')}
-        </div>
-
-        <div class="job-card-actions">
-          <button class="btn-action-primary" onclick="openBlurbModal(${idx})">
-            📝 <span>${isEn ? 'AI Cover Package' : 'Paczka AI & Wynagrodzenie'}</span>
-          </button>
-          
-          <a href="${jobUrl}" target="_blank" rel="noopener" class="btn-action-secondary">
-            🚀 <span>${isEn ? 'Apply on Site' : 'Aplikuj'}</span>
-          </a>
-
-          ${!isApplied ? `
-            <button class="btn-action-icon btn-action-check" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
-              ✅
-            </button>
-          ` : ''}
-          
-          <button class="btn-action-icon btn-action-dismiss" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
-            ❌
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-async function markApplied(jobId) {
   try {
-    await fetch(`/api/jobs/${jobId}/status`, {
+    const res = await fetch('/api/generate-blurb', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'applied' })
+      body: JSON.stringify({
+        title,
+        company,
+        location,
+        work_mode: 'Hybrid',
+        description
+      })
     });
-    alert(currentLang === 'en' ? '✅ Marked as Applied!' : '✅ Oznaczono jako Aplikowane!');
-    loadJobs();
+    const data = await res.json();
+    const newJob = {
+      id: 'custom-' + Date.now(),
+      title,
+      company,
+      location,
+      work_mode: 'Hybrid',
+      description,
+      apply_url: '#',
+      source: 'Custom Entry',
+      match: data.match
+    };
+    currentJobs.unshift(newJob);
+    renderJobs(currentJobs);
+    openBlurbModal(0);
   } catch (err) {
-    alert('Error marking applied: ' + err.message);
-  }
-}
-
-async function dismissJob(jobId) {
-  if (!confirm(currentLang === 'en' ? 'Remove this job offer from your list?' : 'Usunąć tę ofertę z listy?')) return;
-  try {
-    await fetch(`/api/jobs/${jobId}/status`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'dismissed' })
-    });
+    alert((isEn ? 'Analysis error: ' : 'Błąd analizy: ') + err.message);
     loadJobs();
-  } catch (err) {
-    alert('Error dismissing job: ' + err.message);
   }
-}
-
-function helperExtractArray(raw) {
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw;
-  if (typeof raw === 'object') {
-    if (Array.isArray(raw[currentLang])) return raw[currentLang];
-    if (Array.isArray(raw.pl)) return raw.pl;
-    if (Array.isArray(raw.en)) return raw.en;
-    return Object.values(raw).filter(x => typeof x === 'string');
-  }
-  if (typeof raw === 'string') return [raw];
-  return [];
-}
-
-function helperExtractText(raw) {
-  if (!raw) return '';
-  if (typeof raw === 'string') return raw;
-  if (typeof raw === 'object') {
-    return raw[currentLang] || raw.pl || raw.en || '';
-  }
-  return String(raw);
-}
-
-function renderJobs(jobs) {
-  const grid = document.getElementById('jobGrid');
-  const isEn = (currentLang === 'en');
-
-  if (!jobs || jobs.length === 0) {
-    const emptyText = isEn ? 'No job offers found in this category.' : 'Brak ofert w tej kategorii.';
-    grid.innerHTML = `<div style="text-align: center; padding: 40px; color: #94a3b8; font-weight:500;">${emptyText}</div>`;
-    return;
-  }
-
-  grid.innerHTML = jobs.map((job, idx) => {
-    const match = job.match || {};
-    const score = match.match_score || 85;
-    
-    let summaryText = helperExtractText(match.summary);
-    if (summaryText.length > 140) summaryText = summaryText.substring(0, 140) + '...';
-    
-    let strengthsArray = helperExtractArray(match.strengths);
-    if (strengthsArray.length > 3) strengthsArray = strengthsArray.slice(0, 3);
-
-    const sal = match.salary_estimator || {};
-    const estRange = sal.estimated_range || job.salary || '6,5k - 8,5k PLN';
-
-    const isApplied = (job.user_status === 'applied');
-    const jobUrl = job.url || '#';
-
-    return `
-      <div class="job-card" style="padding: 20px; background: rgba(28, 28, 30, 0.75); backdrop-filter: blur(30px); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 180px;">
-            <h3 style="font-size: 17px; font-weight: 700; color: #e5e2e1; margin-bottom: 6px; line-height: 1.3;">${job.title}</h3>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12px; color: #A1A1AA;">
-              <span style="display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">business</span> ${job.company}</span>
-              <span style="display:flex; align-items:center; gap:4px;"><span class="material-symbols-outlined" style="font-size:14px;">location_on</span> ${job.location}</span>
-              <span style="color: #34d399; font-weight: 600;">💰 ${estRange}</span>
-              ${isApplied ? `<span class="pill" style="background: rgba(16,185,129,0.15); color: #34d399; font-weight: 700; font-size:10px; padding: 2px 6px; border-radius: 4px;">APPLIED</span>` : ''}
-            </div>
-          </div>
-          <div class="score-badge" style="flex-shrink: 0; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 13px;">
-            ⚡ ${score}% Match
-          </div>
-        </div>
-
-        <div style="font-size: 13px; color: #34d399; font-weight: 500; margin-bottom: 12px; line-height: 1.4; background: rgba(52, 211, 153, 0.05); padding: 8px 12px; border-radius: 8px; border-left: 3px solid #34d399;">
-          💡 <strong>${isEn ? 'Why it matches:' : 'Dlaczego pasuje:'}</strong> ${summaryText}
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
-          ${strengthsArray.map(s => `<span class="strength-tag" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #d1d5db; font-size: 11px; padding: 3px 8px; border-radius: 6px;"> ${s}</span>`).join('')}
-        </div>
-
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; align-items: center;">
-          <button class="btn-apply" onclick="openBlurbModal(${idx})" style="flex: 1; min-width: 140px; padding: 10px 14px; font-size: 13px; border-radius: 10px; background: rgba(10, 132, 255, 0.2); border: 1px solid rgba(10, 132, 255, 0.4); color: #60a5fa; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
-            📝 ${isEn ? 'AI Cover Package' : 'Paczka AI & Wynagrodzenie'}
-          </button>
-          
-          <a href="${jobUrl}" target="_blank" class="btn-apply" style="padding: 10px 14px; font-size: 13px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #e5e2e1; text-decoration: none; display: flex; align-items: center; gap: 6px;">
-            🚀 ${isEn ? 'Apply on Site' : 'Aplikuj na stronie'}
-          </a>
-
-          ${!isApplied ? `
-            <button class="btn-apply" style="padding: 10px 12px; border-radius: 10px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; cursor: pointer;" onclick="markApplied('${job.id}')" title="${isEn ? 'Mark Applied' : 'Oznacz jako aplikowane'}">
-              ✅
-            </button>
-          ` : ''}
-          
-          <button class="btn-apply" style="padding: 10px 12px; border-radius: 10px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; cursor: pointer;" onclick="dismissJob('${job.id}')" title="${isEn ? 'Dismiss' : 'Odrzuć'}">
-            ❌
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
 }
