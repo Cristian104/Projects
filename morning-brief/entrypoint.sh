@@ -4,11 +4,11 @@
 echo "[entrypoint] Running DB migration..."
 python db_migrate.py || echo "[entrypoint] Migration warning (continuing)"
 
-echo "[entrypoint] Running initial collector..."
-python collector.py || echo "[entrypoint] Collector warning (continuing)"
-
-echo "[entrypoint] Running AI curator & enricher..."
-python curator.py || echo "[entrypoint] Curator warning (continuing)"
+echo "[entrypoint] Launching initial collector & AI curator in background..."
+(
+    python collector.py
+    python curator.py
+) &
 
 echo "[entrypoint] Starting 2-hour AI curation loop in background..."
 (while true; do
@@ -18,5 +18,5 @@ echo "[entrypoint] Starting 2-hour AI curation loop in background..."
     python curator.py
 done) &
 
-echo "[entrypoint] Starting gunicorn..."
+echo "[entrypoint] Starting gunicorn immediately..."
 exec gunicorn app:app --bind 0.0.0.0:8009 --workers 2 --timeout 60
