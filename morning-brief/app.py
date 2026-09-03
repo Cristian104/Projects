@@ -1,9 +1,11 @@
 """Tech Intelligence Magazine — Flask Web App v5 (On-Demand AI Curation). Port 8009."""
 import html
+import os
 import re
+import subprocess
+import sys
 import threading
 from datetime import datetime, timezone
-import sys
 
 from flask import Flask, abort, jsonify, render_template, request
 from db import get_conn, query, is_postgres
@@ -15,6 +17,30 @@ VALID_TABS = {'all', 'ai_ml', 'robotics', 'vehicles', 'dev_hardware'}
 # Global Curation State
 IS_CURATING = False
 CURATION_LOCK = threading.Lock()
+
+
+# ── Version Management ────────────────────────────────────────────────────────
+def get_app_version() -> str:
+    """Returns dynamic version string from version.txt or git rev-parse."""
+    version_file = os.path.join(os.path.dirname(__file__), 'version.txt')
+    if os.path.exists(version_file):
+        try:
+            with open(version_file, 'r', encoding='utf-8') as f:
+                v = f.read().strip()
+                if v:
+                    return v
+        except Exception:
+            pass
+    try:
+        commit = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], text=True).strip()
+        return f"v5.0 ({commit}) • On-Demand"
+    except Exception:
+        return "v5.0-lite • On-Demand"
+
+
+@app.context_processor
+def inject_global_vars():
+    return dict(app_version=get_app_version())
 
 
 # ── Background Curation Spawner ────────────────────────────────────────────────
@@ -59,7 +85,6 @@ def _check_stale_and_trigger(conn):
         if not last:
             should_curate = True
         else:
-            # Check age in seconds
             if isinstance(last, str):
                 try:
                     last_dt = datetime.fromisoformat(last)
@@ -68,7 +93,6 @@ def _check_stale_and_trigger(conn):
             else:
                 last_dt = last
 
-            # Make naive or timezone aware
             now = datetime.now(last_dt.tzinfo) if getattr(last_dt, 'tzinfo', None) else datetime.now()
             age_hours = (now - last_dt).total_seconds() / 3600.0
             if age_hours >= 4.0:
@@ -218,7 +242,8 @@ def article(article_id: int):
 def api_curate_status():
     """Returns live AI curation status."""
     return jsonify({
-        'is_curating': IS_CURATING
+        'is_curating': IS_CURATING,
+        'version': get_app_version()
     })
 
 
