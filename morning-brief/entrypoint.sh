@@ -10,10 +10,10 @@ echo "[entrypoint] Launching initial collector & AI curator in background..."
     python curator.py
 ) &
 
-echo "[entrypoint] Starting 2-hour AI curation loop in background..."
+echo "[entrypoint] Starting 4-hour AI curation loop in background..."
 (while true; do
-    sleep 7200
-    echo "[cron] Running 2-hour collector & AI curator..."
+    sleep 14400
+    echo "[cron] Running 4-hour collector & AI curator..."
     python collector.py
     python curator.py
 done) &

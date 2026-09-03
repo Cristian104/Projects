@@ -174,12 +174,12 @@ def _generate_ai_summary(title: str, text: str | None) -> str | None:
         client = genai.Client(api_key=GEMINI_API_KEY)
         prompt = (
             f"Article Title: {title}\n\n"
-            f"Article Content: {text[:2500]}\n\n"
+            f"Article Content: {text[:1000]}\n\n"
             "Generate a concise 3-bullet point executive summary (TL;DR) for tech professionals. "
             "Start each bullet point with a bullet symbol (•). Keep each point under 25 words."
         )
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model='gemini-flash-lite-latest',
             contents=prompt
         )
         return response.text.strip()

@@ -86,7 +86,7 @@ Return ONLY a valid JSON array of objects with this structure:
     client = get_ai_client()
     try:
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model='gemini-flash-lite-latest',
             contents=prompt
         )
         raw_text = response.text.strip()
@@ -173,7 +173,7 @@ Return ONLY a valid JSON array of objects with this structure:
     client = get_ai_client()
     try:
         response = client.models.generate_content(
-            model='gemini-flash-latest',
+            model='gemini-flash-lite-latest',
             contents=prompt
         )
         raw_text = response.text.strip()
