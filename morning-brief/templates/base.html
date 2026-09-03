@@ -99,7 +99,6 @@ button { font-family: inherit; cursor: pointer; }
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
 }
 
-/* Desktop Header Rows & Groups */
 .header-top-row {
   display: flex; align-items: center; justify-content: space-between; width: 100%;
 }
@@ -141,18 +140,9 @@ button { font-family: inherit; cursor: pointer; }
 }
 .nav-tab:hover { color: var(--text); background: var(--surface-2); }
 .nav-tab.active { color: #fff; background: var(--blue); border-color: var(--blue); }
-[data-theme="light"] .nav-tab.active { color: #fff; background: var(--blue); }
 
 /* Separator */
 .v-sep { width: 1px; height: 16px; background: var(--border); flex-shrink: 0; margin: 0 4px; }
-
-/* Time pill badge */
-.header-time { display: flex; align-items: center; flex-shrink: 0; }
-.time-pill {
-  padding: 5px 12px; border-radius: 20px; border: 1px solid var(--blue-border);
-  font-size: 0.65rem; font-weight: 700; color: var(--blue); background: var(--blue-bg);
-  white-space: nowrap; line-height: 1; letter-spacing: 0.04em;
-}
 
 /* Right Stats & Theme Toggle */
 .header-right {
@@ -172,9 +162,12 @@ button { font-family: inherit; cursor: pointer; }
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.25; }
 }
-.header-stats strong { color: var(--text-2); font-weight: 600; }
+.stat-orange-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--orange);
+  animation: blink 1.2s ease-in-out infinite;
+}
 
-/* Theme toggle button */
 .theme-toggle {
   display: flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
@@ -189,15 +182,27 @@ button { font-family: inherit; cursor: pointer; }
 [data-theme="light"] .icon-moon { display: block; }
 
 /* ─────────────────────────────────────────────────────────
-   ANIMATIONS & RESPONSIVE (< 960px Mobile & Tablet)
+   AI TOAST BANNER
 ───────────────────────────────────────────────────────── */
-.anim {
-  opacity: 0; transform: translateY(20px);
-  transition: opacity 0.5s cubic-bezier(0.16,1,0.3,1),
-              transform 0.5s cubic-bezier(0.16,1,0.3,1);
+.ai-toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 999;
+  background: var(--surface-2); border: 1px solid var(--blue-border);
+  border-radius: 12px; padding: 12px 18px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  animation: slideUp 0.35s cubic-bezier(0.16,1,0.3,1);
 }
-.anim.in { opacity: 1; transform: none; }
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.ai-toast-text { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+.ai-toast-btn {
+  background: var(--blue); color: #fff; border: none;
+  padding: 6px 14px; border-radius: 8px; font-size: 0.72rem; font-weight: 700;
+}
 
+/* Responsive (< 960px) */
 @media (max-width: 960px) {
   .header-inner {
     flex-direction: column; height: auto; padding: 10px 16px 8px; gap: 8px;
@@ -227,12 +232,19 @@ button { font-family: inherit; cursor: pointer; }
       <div class="header-right">
         <div class="header-stats">
           {% block header_stats %}
+          {% if is_updating %}
+          <span class="stat-live" style="color:var(--orange);">
+            <span class="stat-orange-dot"></span>
+            <strong>✦ Updating AI Briefing...</strong>
+          </span>
+          {% else %}
           <span class="stat-live">
             <span class="stat-green-dot"></span>
             <strong>Top 10 Curated</strong>
           </span>
+          {% endif %}
           <span class="v-sep"></span>
-          <span>✦ Gemini Flash</span>
+          <span>✦ Gemini Flash Lite</span>
           {% endblock %}
         </div>
 
@@ -268,6 +280,12 @@ button { font-family: inherit; cursor: pointer; }
   </div>
 </header>
 
+<!-- Floating Toast Banner -->
+<div id="aiToastBanner" class="ai-toast" style="display:none;">
+  <span class="ai-toast-text">✦ Fresh AI Executive Briefing Ready</span>
+  <button class="ai-toast-btn" onclick="window.location.reload()">Reload Feed</button>
+</div>
+
 {% block content %}{% endblock %}
 
 <script>
@@ -286,6 +304,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (activeTab && navContainer && window.innerWidth <= 960) {
     activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   }
+
+  {% if is_updating %}
+  /* Poll AI curation status if background curation is active */
+  const checkInterval = setInterval(() => {
+    fetch('/api/curate-status')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.is_curating) {
+          clearInterval(checkInterval);
+          const toast = document.getElementById('aiToastBanner');
+          if (toast) toast.style.display = 'flex';
+        }
+      })
+      .catch(() => {});
+  }, 2500);
+  {% endif %}
 });
 
 /* ── Scroll reveal ── */
