@@ -7,7 +7,7 @@ services:
       - "127.0.0.1:8009:8009"
     environment:
       - DATABASE_URL=postgresql://admin:stacks_secure_pass_2024@stacks-postgres:5432/news
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-AQ.Ab8RN6I2cuzDGYHDI0I0W0I--wcVTRobutxfarWvnzp91wuZYQ}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
       - stacks-net
       - default
