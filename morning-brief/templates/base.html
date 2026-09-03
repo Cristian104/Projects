@@ -4,7 +4,7 @@
 <!-- Anti-FOUC: set theme before CSS paints -->
 <script>(function(){var t=localStorage.getItem('theme')||(window.matchMedia('(prefers-color-scheme:light)').matches?'light':'dark');document.documentElement.setAttribute('data-theme',t);})();</script>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>{% block title %}Tech Pulse — Next-Gen Tech Magazine{% endblock %}</title>
 <meta name="description" content="{% block meta_desc %}Curated AI, Robotics, Mobility, and Hardware magazine.{% endblock %}">
 <meta property="og:image" content="/static/images/og-image.png">
@@ -66,12 +66,15 @@
    RESET & BASE
 ───────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
+html, body {
+  width: 100%; max-width: 100%; overflow-x: hidden;
+  scroll-behavior: smooth;
+}
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100vh;
+  min-height: 100vh; display: flex; flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.25s, color 0.25s;
@@ -92,6 +95,7 @@ button { font-family: inherit; cursor: pointer; }
   -webkit-backdrop-filter: blur(24px) saturate(180%);
   border-bottom: 1px solid var(--border);
   transition: background 0.25s, border-color 0.25s;
+  width: 100%;
 }
 .header-inner {
   max-width: 1320px; margin: 0 auto;
@@ -101,9 +105,6 @@ button { font-family: inherit; cursor: pointer; }
 
 .header-top-row {
   display: flex; align-items: center; justify-content: space-between; width: 100%;
-}
-.header-main-group {
-  display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1;
 }
 
 /* Logo */
@@ -207,24 +208,26 @@ button { font-family: inherit; cursor: pointer; }
 .footer {
   border-top: 1px solid var(--border);
   background: var(--surface-2);
-  padding: 36px 24px; margin-top: 60px;
+  padding: 32px 24px; margin-top: auto; width: 100%;
 }
 .footer-inner {
   max-width: 1320px; margin: 0 auto;
-  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
   flex-wrap: wrap;
 }
-.footer-brand { display: flex; flex-direction: column; gap: 6px; }
-.footer-desc { font-size: 0.78rem; color: var(--text-3); }
-.footer-meta { display: flex; align-items: center; gap: 12px; }
+.footer-brand { display: flex; flex-direction: column; gap: 4px; }
+.footer-desc { font-size: 0.76rem; color: var(--text-3); }
+.footer-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .version-badge {
   font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
   padding: 4px 10px; border-radius: 12px; background: var(--blue-bg); color: var(--blue);
   border: 1px solid var(--blue-border); white-space: nowrap;
 }
-.footer-copy { font-size: 0.74rem; color: var(--text-3); }
+.footer-copy { font-size: 0.73rem; color: var(--text-3); white-space: nowrap; }
 
-/* Responsive (< 960px) */
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE (< 960px Mobile & Tablet)
+───────────────────────────────────────────────────────── */
 @media (max-width: 960px) {
   .header-inner {
     flex-direction: column; height: auto; padding: 10px 16px 8px; gap: 8px;
@@ -235,7 +238,10 @@ button { font-family: inherit; cursor: pointer; }
     -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 8px, #000 calc(100% - 8px), transparent 100%);
   }
   .header-time, .header-stats, .v-sep { display: none !important; }
-  .footer-inner { flex-direction: column; align-items: flex-start; gap: 14px; }
+  .footer { padding: 24px 16px; }
+  .footer-inner { flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .footer-meta { justify-content: center; }
+  .ai-toast { bottom: 16px; left: 16px; right: 16px; justify-content: space-between; }
 }
 </style>
 {% block head_extra %}{% endblock %}
@@ -309,7 +315,9 @@ button { font-family: inherit; cursor: pointer; }
   <button class="ai-toast-btn" onclick="window.location.reload()">Reload Feed</button>
 </div>
 
-{% block content %}{% endblock %}
+<div style="flex:1;">
+  {% block content %}{% endblock %}
+</div>
 
 <!-- Footer -->
 <footer class="footer">
