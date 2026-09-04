@@ -368,7 +368,7 @@ function toggleTheme() {
 /* ── Global Curation Trigger ── */
 function triggerManualCuration() {
   const overlay = document.getElementById('aiCurateOverlay');
-  if (overlay) overlay.style.display = 'block';
+  if (overlay) overlay.style.display = 'flex';
 
   fetch('/api/curate-now', { method: 'POST' })
     .then(r => r.json())
