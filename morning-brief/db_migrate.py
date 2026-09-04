@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Morning Brief — DB Migration (AI Curation & Impact Ranking)
-Adds rank_section, rank_overall, and ai_impact_reason columns.
+Adds rank_section, rank_overall, ai_impact_reason, and curation_meta table.
 """
 import sys
 from db import get_conn, is_postgres
@@ -14,6 +14,11 @@ PG_MIGRATIONS = [
         summary     TEXT,
         source      TEXT,
         fetched_at  TIMESTAMPTZ DEFAULT NOW()
+    )""",
+    """CREATE TABLE IF NOT EXISTS curation_meta (
+        id               INT PRIMARY KEY DEFAULT 1,
+        last_curated_at  TIMESTAMPTZ DEFAULT NOW(),
+        is_curating      BOOLEAN DEFAULT FALSE
     )""",
     "ALTER TABLE articles ADD COLUMN IF NOT EXISTS category VARCHAR(30) DEFAULT 'dev_hardware'",
     "ALTER TABLE articles ADD COLUMN IF NOT EXISTS subcategory VARCHAR(30) DEFAULT 'dev_hardware'",
@@ -52,6 +57,11 @@ SQLITE_MIGRATIONS = [
         enriched         BOOLEAN DEFAULT FALSE,
         fetched_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )""",
+    """CREATE TABLE IF NOT EXISTS curation_meta (
+        id               INTEGER PRIMARY KEY DEFAULT 1,
+        last_curated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        is_curating      BOOLEAN DEFAULT FALSE
+    )""",
     "ALTER TABLE articles ADD COLUMN category VARCHAR(30) DEFAULT 'dev_hardware'",
     "ALTER TABLE articles ADD COLUMN subcategory VARCHAR(30) DEFAULT 'dev_hardware'",
     "ALTER TABLE articles ADD COLUMN rank_section INT DEFAULT 99",
@@ -85,6 +95,14 @@ def run():
                 print(f'  SKIP (exists) {label}')
             else:
                 print(f'  ERR {label}\n      {exc}', file=sys.stderr)
+
+    # Ensure single row in curation_meta
+    try:
+        cur.execute("INSERT INTO curation_meta (id, is_curating) VALUES (1, FALSE) ON CONFLICT (id) DO NOTHING")
+        conn.commit()
+    except Exception:
+        pass
+
     conn.close()
     print('Migration complete.')
 

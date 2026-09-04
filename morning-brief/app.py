@@ -1,4 +1,4 @@
-"""Tech Intelligence Magazine — Flask Web App v5 (On-Demand AI Curation). Port 8009."""
+"""Tech Intelligence Magazine — Flask Web App v5.1 (Real-Time AI Curation). Port 8009."""
 import html
 import os
 import re
@@ -14,7 +14,6 @@ app = Flask(__name__)
 
 VALID_TABS = {'all', 'ai_ml', 'robotics', 'vehicles', 'dev_hardware'}
 
-# Global Curation State
 IS_CURATING = False
 CURATION_LOCK = threading.Lock()
 
@@ -33,9 +32,9 @@ def get_app_version() -> str:
             pass
     try:
         commit = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], text=True).strip()
-        return f"v5.0 ({commit}) • On-Demand"
+        return f"v5.1 ({commit}) • On-Demand"
     except Exception:
-        return "v5.0-lite • On-Demand"
+        return "v5.1-lite • On-Demand"
 
 
 @app.context_processor
@@ -73,13 +72,15 @@ def _check_stale_and_trigger(conn):
         return True
 
     try:
-        cur = query(conn, """
-            SELECT MAX(fetched_at) AS last_curated
-            FROM articles
-            WHERE rank_section <= 10
-        """)
+        cur = query(conn, "SELECT last_curated_at, is_curating FROM curation_meta WHERE id = 1")
         row = cur.fetchone()
-        last = row['last_curated'] if row else None
+        
+        last = row['last_curated_at'] if row else None
+        db_curating = row['is_curating'] if row else False
+
+        if db_curating:
+            IS_CURATING = True
+            return True
 
         should_curate = False
         if not last:
@@ -241,9 +242,33 @@ def article(article_id: int):
 @app.route('/api/curate-status')
 def api_curate_status():
     """Returns live AI curation status."""
+    conn = get_conn()
+    try:
+        cur = query(conn, "SELECT is_curating, last_curated_at FROM curation_meta WHERE id = 1")
+        row = cur.fetchone()
+        db_curating = row['is_curating'] if row else False
+        last_at = str(row['last_curated_at'])[:16].replace('T', ' ') if row and row['last_curated_at'] else ''
+    except Exception:
+        db_curating = False
+        last_at = ''
+    finally:
+        conn.close()
+
     return jsonify({
-        'is_curating': IS_CURATING,
+        'is_curating': IS_CURATING or db_curating,
+        'last_curated_at': last_at,
         'version': get_app_version()
+    })
+
+
+@app.route('/api/curate-now', methods=['GET', 'POST'])
+def api_curate_now():
+    """Explicitly triggers fresh AI Curation."""
+    t = threading.Thread(target=_run_bg_curation, daemon=True)
+    t.start()
+    return jsonify({
+        'ok': True,
+        'status': 'curating'
     })
 
 
