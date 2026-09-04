@@ -75,11 +75,13 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  display: flex; flex-direction: column;
   width: 100%; max-width: 100%; overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background 0.25s, color 0.25s;
 }
+main, .page { flex: 1 0 auto; }
 a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; }
 ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -168,6 +170,20 @@ button { font-family: inherit; cursor: pointer; }
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--orange);
   animation: blink 1.2s ease-in-out infinite;
+}
+
+.refresh-hdr-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px; border-radius: 16px;
+  background: var(--blue-bg); color: var(--blue);
+  border: 1px solid var(--blue-border);
+  font-size: 0.72rem; font-weight: 700;
+  transition: all 0.15s; cursor: pointer; flex-shrink: 0;
+}
+.refresh-hdr-btn:hover { background: var(--blue); color: #fff; }
+@media (max-width: 480px) {
+  .refresh-hdr-btn .refresh-text { display: none; }
+  .refresh-hdr-btn { padding: 6px 10px; border-radius: 50%; }
 }
 
 .theme-toggle {
@@ -260,6 +276,11 @@ button { font-family: inherit; cursor: pointer; }
       </a>
 
       <div class="header-right">
+        <button class="refresh-hdr-btn" onclick="triggerManualCuration()" title="Refresh AI Briefing">
+          <span class="refresh-icon">⚡</span>
+          <span class="refresh-text">Refresh</span>
+        </button>
+
         <div class="header-stats">
           {% block header_stats %}
           {% if is_updating %}
@@ -342,6 +363,29 @@ function toggleTheme() {
   const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
   html.setAttribute('data-theme', next);
   localStorage.setItem('theme', next);
+}
+
+/* ── Global Curation Trigger ── */
+function triggerManualCuration() {
+  const overlay = document.getElementById('aiCurateOverlay');
+  if (overlay) overlay.style.display = 'block';
+
+  fetch('/api/curate-now', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (typeof showCurateProgress === 'function') {
+        showCurateProgress();
+      } else {
+        window.location.href = '/?updating=1';
+      }
+    })
+    .catch(() => {
+      if (typeof showCurateProgress === 'function') {
+        showCurateProgress();
+      } else {
+        window.location.href = '/?updating=1';
+      }
+    });
 }
 
 /* ── Auto-scroll active tab into view on mobile/tablet ── */

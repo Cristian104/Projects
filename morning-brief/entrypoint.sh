@@ -4,9 +4,9 @@
 echo "[entrypoint] Generating dynamic version string..."
 GIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "")
 if [ -n "$GIT_HASH" ]; then
-    echo "v5.0 ($GIT_HASH) • On-Demand" > version.txt
+    echo "v5.1 ($GIT_HASH) • On-Demand" > version.txt
 else
-    echo "v5.0-lite • On-Demand" > version.txt
+    echo "v5.1 (Realtime Loader) • On-Demand" > version.txt
 fi
 
 echo "[entrypoint] Running DB migration..."

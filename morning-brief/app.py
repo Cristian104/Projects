@@ -160,7 +160,7 @@ def index():
     conn = get_conn()
 
     # Trigger background curation if cache is stale (>4h)
-    is_updating = _check_stale_and_trigger(conn)
+    is_updating = _check_stale_and_trigger(conn) or (request.args.get('updating') == '1')
 
     if tab == 'all':
         cur = query(conn, """
