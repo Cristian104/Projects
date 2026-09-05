@@ -96,7 +96,7 @@ def _check_stale_and_trigger(conn):
 
             now = datetime.now(last_dt.tzinfo) if getattr(last_dt, 'tzinfo', None) else datetime.now()
             age_hours = (now - last_dt).total_seconds() / 3600.0
-            if age_hours >= 4.0:
+            if age_hours >= 12.0:
                 should_curate = True
 
         if should_curate:
@@ -159,8 +159,8 @@ def index():
 
     conn = get_conn()
 
-    # Trigger background curation if cache is stale (>4h)
-    is_updating = _check_stale_and_trigger(conn) or (request.args.get('updating') == '1')
+    # Trigger background curation if cache is stale (>12h)
+    is_updating = _check_stale_and_trigger(conn)
 
     if tab == 'all':
         cur = query(conn, """
@@ -171,6 +171,17 @@ def index():
             WHERE rank_overall <= 10
             ORDER BY rank_overall ASC
         """)
+        rows = cur.fetchall()
+        if not rows:
+            cur = query(conn, """
+                SELECT id, title, link, summary, source, category,
+                       importance_score, rank_section, rank_overall,
+                       hero_image, ai_summary, ai_impact_reason, read_time, fetched_at
+                FROM articles
+                ORDER BY fetched_at DESC
+                LIMIT 10
+            """)
+            rows = cur.fetchall()
     else:
         cur = query(conn, """
             SELECT id, title, link, summary, source, category,
@@ -180,8 +191,18 @@ def index():
             WHERE category = %s AND rank_section <= 10
             ORDER BY rank_section ASC
         """, (tab,))
-
-    rows = cur.fetchall()
+        rows = cur.fetchall()
+        if not rows:
+            cur = query(conn, """
+                SELECT id, title, link, summary, source, category,
+                       importance_score, rank_section, rank_overall,
+                       hero_image, ai_summary, ai_impact_reason, read_time, fetched_at
+                FROM articles
+                WHERE category = %s
+                ORDER BY fetched_at DESC
+                LIMIT 10
+            """, (tab,))
+            rows = cur.fetchall()
 
     # Stats
     cur = query(conn, """

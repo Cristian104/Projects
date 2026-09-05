@@ -299,26 +299,6 @@
 {% block content %}
 <main class="page">
 
-<!-- ── Real-Time AI Curation Fixed Full-Screen Modal Overlay ──────────────── -->
-<div id="aiCurateOverlay" class="ai-curate-overlay" style="{% if not is_updating %}display:none;{% else %}display:flex;{% endif %}">
-  <div class="ai-curate-modal-card">
-    <div class="ai-loader-badge">
-      <span class="pulse-sparkle">✦</span> GEMINI FLASH LITE AI EDITOR
-    </div>
-    <h2 class="ai-loader-title">Analyzing & Ranking Tech Headlines</h2>
-    <p class="ai-loader-desc" id="aiStepText">Filtering candidate stories from Wired, TechCrunch, Verge, MIT Tech Review...</p>
-    
-    <div class="ai-progress-track">
-      <div class="ai-progress-fill" id="aiProgressFill" style="width:25%;"></div>
-    </div>
-    
-    <div class="ai-loader-status-sub">
-      <span class="ai-spinner"></span>
-      <strong id="aiProgressPercent" style="color:var(--blue);">25%</strong> · Live Curation in Progress
-    </div>
-  </div>
-</div>
-
 {% if articles %}
 {% set hero = articles[0] %}
 
@@ -416,62 +396,4 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-let currentProgress = 25;
-
-function showCurateProgress() {
-  const overlay = document.getElementById('aiCurateOverlay');
-  if (overlay) overlay.style.display = 'flex';
-  
-  const fill = document.getElementById('aiProgressFill');
-  const txt = document.getElementById('aiStepText');
-  const pct = document.getElementById('aiProgressPercent');
-
-  const poller = setInterval(() => {
-    fetch('/api/curate-status')
-      .then(r => r.json())
-      .then(data => {
-        if (data.is_curating) {
-          currentProgress = Math.min(92, currentProgress + 15);
-          if (fill) fill.style.width = currentProgress + '%';
-          if (pct) pct.innerText = currentProgress + '%';
-          if (txt) {
-            if (currentProgress < 45) txt.innerText = "Curating AI & Robotics headlines...";
-            else if (currentProgress < 75) txt.innerText = "Curating Mobility & Hardware stories...";
-            else txt.innerText = "Master Overall Ranking & Enriching Text...";
-          }
-        } else {
-          clearInterval(poller);
-          if (fill) fill.style.width = '100%';
-          if (pct) pct.innerText = '100%';
-          if (txt) txt.innerText = "Briefing Complete! Reloading Feed...";
-          setTimeout(() => {
-            window.location.reload();
-          }, 600);
-        }
-      })
-      .catch(() => {});
-  }, 1800);
-}
-
-function triggerManualCuration() {
-  const overlay = document.getElementById('aiCurateOverlay');
-  if (overlay) overlay.style.display = 'flex';
-  
-  fetch('/api/curate-now', { method: 'POST' })
-    .then(r => r.json())
-    .then(data => {
-      showCurateProgress();
-    })
-    .catch(() => {
-      showCurateProgress();
-    });
-}
-
-{% if is_updating %}
-document.addEventListener('DOMContentLoaded', () => {
-  showCurateProgress();
-});
-{% endif %}
-</script>
 {% endblock %}

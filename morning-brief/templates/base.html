@@ -186,6 +186,22 @@ button { font-family: inherit; cursor: pointer; }
   .refresh-hdr-btn { padding: 6px 10px; border-radius: 50%; }
 }
 
+.top-progress-track {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 999999;
+  background: rgba(10,132,255,0.15); pointer-events: none;
+}
+.top-progress-fill {
+  height: 100%; background: linear-gradient(90deg, var(--blue), #00d2ff, var(--purple));
+  width: 0%; border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 10px var(--blue);
+  transition: width 0.4s ease-in-out;
+  animation: pulseTrack 1.5s ease-in-out infinite;
+}
+@keyframes pulseTrack {
+  0%, 100% { opacity: 0.9; }
+  50%       { opacity: 1; filter: brightness(1.3); }
+}
+
 .theme-toggle {
   display: flex; align-items: center; justify-content: center;
   width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
@@ -265,6 +281,11 @@ button { font-family: inherit; cursor: pointer; }
 </head>
 <body>
 
+<!-- Top Progress Bar (Non-blocking) -->
+<div id="topProgressBarTrack" class="top-progress-track" style="{% if not is_updating %}display:none;{% endif %}">
+  <div id="topProgressBarFill" class="top-progress-fill" style="width:25%;"></div>
+</div>
+
 <!-- ── Header ───────────────────────────────────────────────── -->
 <header class="header">
   <div class="header-inner">
@@ -278,7 +299,7 @@ button { font-family: inherit; cursor: pointer; }
       <div class="header-right">
         <button class="refresh-hdr-btn" onclick="triggerManualCuration()" title="Refresh AI Briefing">
           <span class="refresh-icon">⚡</span>
-          <span class="refresh-text">Refresh</span>
+          <span class="refresh-text" id="hdrRefreshText">Refresh</span>
         </button>
 
         <div class="header-stats">
@@ -365,27 +386,50 @@ function toggleTheme() {
   localStorage.setItem('theme', next);
 }
 
-/* ── Global Curation Trigger ── */
-function triggerManualCuration() {
-  const overlay = document.getElementById('aiCurateOverlay');
-  if (overlay) overlay.style.display = 'flex';
+/* ── Global Top Progress Bar & Curation Trigger ── */
+let currentProgress = 25;
+let topPoller = null;
 
+function showTopProgress() {
+  const barTrack = document.getElementById('topProgressBarTrack');
+  const barFill = document.getElementById('topProgressBarFill');
+  const btnTxt = document.getElementById('hdrRefreshText');
+
+  if (barTrack) barTrack.style.display = 'block';
+  if (barFill) barFill.style.width = currentProgress + '%';
+  if (btnTxt) btnTxt.innerText = `Curating ${currentProgress}%`;
+
+  if (topPoller) clearInterval(topPoller);
+
+  topPoller = setInterval(() => {
+    fetch('/api/curate-status')
+      .then(r => r.json())
+      .then(data => {
+        if (data.is_curating) {
+          currentProgress = Math.min(92, currentProgress + 12);
+          if (barFill) barFill.style.width = currentProgress + '%';
+          if (btnTxt) btnTxt.innerText = `Curating ${currentProgress}%`;
+        } else {
+          clearInterval(topPoller);
+          if (barFill) barFill.style.width = '100%';
+          if (btnTxt) btnTxt.innerText = 'Refresh';
+          setTimeout(() => {
+            if (barTrack) barTrack.style.display = 'none';
+          }, 800);
+          const toast = document.getElementById('aiToastBanner');
+          if (toast) toast.style.display = 'flex';
+        }
+      })
+      .catch(() => {});
+  }, 2000);
+}
+
+function triggerManualCuration() {
+  showTopProgress();
   fetch('/api/curate-now', { method: 'POST' })
     .then(r => r.json())
-    .then(data => {
-      if (typeof showCurateProgress === 'function') {
-        showCurateProgress();
-      } else {
-        window.location.href = '/?updating=1';
-      }
-    })
-    .catch(() => {
-      if (typeof showCurateProgress === 'function') {
-        showCurateProgress();
-      } else {
-        window.location.href = '/?updating=1';
-      }
-    });
+    .then(data => {})
+    .catch(() => {});
 }
 
 /* ── Auto-scroll active tab into view on mobile/tablet ── */
@@ -397,19 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   {% if is_updating %}
-  /* Poll AI curation status if background curation is active */
-  const checkInterval = setInterval(() => {
-    fetch('/api/curate-status')
-      .then(r => r.json())
-      .then(data => {
-        if (!data.is_curating) {
-          clearInterval(checkInterval);
-          const toast = document.getElementById('aiToastBanner');
-          if (toast) toast.style.display = 'flex';
-        }
-      })
-      .catch(() => {});
-  }, 2500);
+  showTopProgress();
   {% endif %}
 });
 
