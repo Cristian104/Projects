@@ -50,6 +50,15 @@ def _run_bg_curation():
             return
         IS_CURATING = True
 
+    conn = get_conn()
+    try:
+        query(conn, "UPDATE curation_meta SET is_curating = TRUE WHERE id = 1")
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
     try:
         print("[On-Demand Curation] Starting background collector & curator...")
         from collector import run_collector
@@ -60,6 +69,14 @@ def _run_bg_curation():
         print("[On-Demand Curation] Curation complete.")
     except Exception as exc:
         print(f"[On-Demand Curation] Error: {exc}", file=sys.stderr)
+        conn = get_conn()
+        try:
+            query(conn, "UPDATE curation_meta SET is_curating = FALSE WHERE id = 1")
+            conn.commit()
+        except Exception:
+            pass
+        finally:
+            conn.close()
     finally:
         with CURATION_LOCK:
             IS_CURATING = False

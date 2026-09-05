@@ -207,31 +207,35 @@ def _score_tech_articles():
         print(f'  Tech scoring FAILED - {exc}', file=sys.stderr)
 
 
-# -- Main -----------------------------------------------------------------------
-if __name__ == '__main__':
-    print(f'[{datetime.now():%Y-%m-%d %H:%M:%S}] Tech Collector starting...')
+def run_collector() -> int:
+    print(f'[{datetime.now():%Y-%m-%d %H:%M:%S}] Tech Collector starting...', flush=True)
     total = 0
 
-    print('-- AI & Machine Learning --')
+    print('-- AI & Machine Learning --', flush=True)
     for name, kind, url in AI_SOURCES:
         total += _fetch_rss(name, url, 'ai_ml')
 
-    print('-- Robotics & Automation --')
+    print('-- Robotics & Automation --', flush=True)
     for name, kind, url in ROBOTICS_SOURCES:
         total += _fetch_rss(name, url, 'robotics')
 
-    print('-- EV & Mobility --')
+    print('-- EV & Mobility --', flush=True)
     for name, kind, url in VEHICLES_SOURCES:
         total += _fetch_rss(name, url, 'vehicles')
 
-    print('-- General Tech & Dev --')
+    print('-- General Tech & Dev --', flush=True)
     for name, kind, url in DEV_HARDWARE_SOURCES:
         if kind == 'hn':
             total += _fetch_hn()
         else:
             total += _fetch_rss(name, url, 'dev_hardware')
 
-    print('-- Scoring --')
+    print('-- Scoring --', flush=True)
     _score_tech_articles()
 
-    print(f'[{datetime.now():%Y-%m-%d %H:%M:%S}] Done - {total} new articles stored.')
+    print(f'[{datetime.now():%Y-%m-%d %H:%M:%S}] Done - {total} new articles stored.', flush=True)
+    return total
+
+
+if __name__ == '__main__':
+    run_collector()
