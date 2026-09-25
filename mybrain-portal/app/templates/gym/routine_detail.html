@@ -224,7 +224,7 @@
           {% if exercise.library_item.image_filename %}
           <div style="flex: 1; max-width: 150px">
             <img
-              src="{{ url_for('static', filename='uploads/gym/' + exercise.library_item.image_filename) }}"
+              src="{{ exercise.library_item.image_filename if exercise.library_item.image_filename.startswith('http://') or exercise.library_item.image_filename.startswith('https://') else url_for('static', filename='uploads/gym/' + exercise.library_item.image_filename) }}"
               style="
                 width: 100%;
                 border-radius: 8px;

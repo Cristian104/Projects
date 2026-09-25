@@ -442,7 +442,11 @@ def update_library_item(ex_id):
     item.default_reps = request.form.get('default_reps')
     item.video_url = request.form.get('video_url')
 
-    # Handle File Upload
+    image_url = request.form.get('image_url')
+    if image_url and image_url.strip():
+        item.image_filename = image_url.strip()
+
+    # Handle File Upload (overrides URL if provided)
     if 'image_file' in request.files:
         file = request.files['image_file']
         if file and file.filename != '':

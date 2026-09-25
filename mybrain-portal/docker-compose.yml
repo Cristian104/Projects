@@ -7,6 +7,7 @@ services:
       - "127.0.0.1:5000:5000"  # Cloudflare proxies directly to this port
     volumes:
       - ./app:/app/app            # Live code mount (no rebuild needed for template/Python changes)
+      - mybrain-uploads:/app/app/static/uploads
       - /var/run/docker.sock:/var/run/docker.sock:ro  # Docker socket for container discovery
     env_file:
       - .env  # <--- Loads TELEGRAM_BOT_TOKEN, CHAT_ID, etc. securely
@@ -16,6 +17,10 @@ services:
     networks:
       - stacks-net
       - default
+
+volumes:
+  mybrain-uploads:
+    driver: local
 
 networks:
   stacks-net:
