@@ -1,5 +1,6 @@
+#!/usr/bin/env python3
 """
-Morning Brief — AI Curation & Impact Ranking Engine v5
+Morning Brief — AI Curation & Impact Ranking Engine v6 (With strict date filtering)
 Uses Gemini Flash Lite to deduplicate candidate stories, select Top 10 per category,
 rank them by impact, and produce AI impact summaries.
 """
@@ -7,7 +8,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # Load .env if present
@@ -31,6 +32,30 @@ def get_ai_client():
     return genai.Client(api_key=GEMINI_API_KEY)
 
 
+def _is_article_too_old(link: str, fetched_at) -> bool:
+    now = datetime.now()
+    # Check URL date regex (e.g. /2026/09/03/)
+    m = re.search(r'/(20\d\d)/(0[1-9]|1[0-2])/(0[1-9]|[12]\d|3[01])/', link)
+    if m:
+        try:
+            pub_dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+            if (now - pub_dt).days > 3:
+                return True
+        except Exception:
+            pass
+
+    # Check fetched_at if available
+    if fetched_at:
+        try:
+            dt = fetched_at.replace(tzinfo=None) if hasattr(fetched_at, 'tzinfo') and fetched_at.tzinfo else fetched_at
+            if (now - dt).days > 3:
+                return True
+        except Exception:
+            pass
+
+    return False
+
+
 def curate_category(category: str):
     """Curates candidate articles for a category and assigns rank_section (1..10)."""
     conn = get_conn()
@@ -39,13 +64,16 @@ def curate_category(category: str):
         SELECT id, title, summary, source, link, fetched_at
         FROM articles
         WHERE category = %s
+          AND fetched_at >= NOW() - INTERVAL '3 days'
         ORDER BY fetched_at DESC
-        LIMIT 50
+        LIMIT 60
     """, (category,))
-    candidates = cur.fetchall()
+    raw_candidates = cur.fetchall()
+
+    candidates = [c for c in raw_candidates if not _is_article_too_old(c['link'], c.get('fetched_at'))]
 
     if not candidates or len(candidates) < 3:
-        print(f"  [{category}] Insufficient candidate articles ({len(candidates)} found). Skipping curation.")
+        print(f"  [{category}] Insufficient recent candidate articles ({len(candidates)} found). Skipping curation.")
         conn.close()
         return
 
@@ -113,12 +141,14 @@ def curate_master_all():
     conn = get_conn()
 
     cur = query(conn, """
-        SELECT id, title, summary, source, category, rank_section, ai_impact_reason
+        SELECT id, title, summary, source, category, rank_section, ai_impact_reason, link, fetched_at
         FROM articles
         WHERE rank_section <= 10
         ORDER BY rank_section ASC
     """)
-    candidates = cur.fetchall()
+    raw_candidates = cur.fetchall()
+
+    candidates = [c for c in raw_candidates if not _is_article_too_old(c['link'], c.get('fetched_at'))]
 
     if not candidates:
         print("  [all] No section-curated articles found. Skipping master curation.")
@@ -136,7 +166,7 @@ def curate_master_all():
     candidates_block = "\n".join(items_text)
 
     prompt = f"""You are the Editor-in-Chief of Tech Pulse Magazine.
-Here are 40 top section-curated headlines across AI, Robotics, Mobility, and Hardware:
+Here are top section-curated headlines across AI, Robotics, Mobility, and Hardware:
 
 {candidates_block}
 
@@ -206,12 +236,11 @@ def run_full_curation():
     print("  Enriching full text & images for all curated top stories...", flush=True)
     enrich_curated_articles()
 
-    # Finalize curation metadata & update timestamps
+    # Finalize curation metadata (WITHOUT overwriting fetched_at for articles)
     conn = get_conn()
     try:
         now_sql = "CURRENT_TIMESTAMP" if not is_postgres() else "NOW()"
         query(conn, f"UPDATE curation_meta SET is_curating = FALSE, last_curated_at = {now_sql} WHERE id = 1")
-        query(conn, f"UPDATE articles SET fetched_at = {now_sql} WHERE rank_section <= 10 OR rank_overall <= 10")
         conn.commit()
     except Exception as exc:
         print(f"Error finalizing curation meta: {exc}", file=sys.stderr)

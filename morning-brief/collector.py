@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """
-Tech Magazine — Collector v3
-Fetches articles from RSS feeds and Hacker News API across tech domains:
-  - AI & Machine Learning (ai_ml)
-  - Robotics & Automation (robotics)
-  - Autonomous Vehicles & Mobility (vehicles)
-  - General Tech & Hardware (dev_hardware)
+Tech Magazine — Collector v4 (With strict 3-day freshness check)
+Fetches articles from RSS feeds and Hacker News API across tech domains.
+Filters out articles older than 3 days.
 """
 import os
 import re
 import sys
-from datetime import datetime
+import time
+from datetime import datetime, timedelta
 
 import feedparser
 import requests
@@ -73,6 +71,30 @@ HEADERS = {
     )
 }
 
+def _is_too_old(link: str, entry) -> bool:
+    """Returns True if the article is older than 3 days."""
+    now = datetime.now()
+    # Check URL date pattern (e.g. /2026/09/03/)
+    m = re.search(r'/(20\d\d)/(0[1-9]|1[0-2])/(0[1-9]|[12]\d|3[01])/', link)
+    if m:
+        try:
+            pub_dt = datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
+            if (now - pub_dt).days > 3:
+                return True
+        except Exception:
+            pass
+
+    # Check parsed publication date from RSS
+    if entry.get('published_parsed'):
+        try:
+            pub_dt = datetime(*entry.published_parsed[:6])
+            if (now - pub_dt).days > 3:
+                return True
+        except Exception:
+            pass
+
+    return False
+
 
 # ── DB helpers ─────────────────────────────────────────────────────────────────
 def _store(source: str, category: str, articles: list[tuple]) -> int:
@@ -125,6 +147,8 @@ def _fetch_rss(name: str, url: str, category: str) -> int:
             summary = (e.get('summary') or e.get('description') or '').strip()
             img     = _entry_image(e)
             if title and link:
+                if _is_too_old(link, e):
+                    continue
                 arts.append((title, link, summary, img))
         added = _store(name, category, arts)
         imgs  = sum(1 for _, _, _, i in arts if i)
